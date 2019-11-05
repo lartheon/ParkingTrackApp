@@ -1,0 +1,5 @@
+/Users/hannahr/Documents/Java/ThreeTierApp/Repo/TrackReg/sql_files
+
+/usr/local/mysql-8.0.18-macos10.14-x86_64/bin
+
+sudo cp /Users/hannahr/Documents/Java/ThreeTierApp/Repo/TrackReg/sql_files/md.sql /usr/local/mysql-8.0.18-macos10.14-x86_64/bin
