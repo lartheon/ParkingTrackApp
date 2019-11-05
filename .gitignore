@@ -21,3 +21,8 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# ignore hannah sql testing files
+/sql_files/
+./
+../
