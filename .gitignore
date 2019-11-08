@@ -21,3 +21,10 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# keynote diagrams
+SequenceDiagramParkingApp.key*
+UseCaseParkingApp.key*
+
+# folder sql_files - hannahs java test sql data
+
