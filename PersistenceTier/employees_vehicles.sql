@@ -1,5 +1,5 @@
 
-/* employees_vehicles table */
+-- employees_vehicles table 
 CREATE TABLE employees_vehicles (
       employee_id INT NOT NULL REFERENCES employees(employee_id)
     , vehicle_id INT NOT NULL REFERENCES vehicles(vehicle_id)
