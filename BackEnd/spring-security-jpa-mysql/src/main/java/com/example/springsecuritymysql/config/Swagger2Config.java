@@ -1,5 +1,7 @@
+/*
 package com.example.springsecuritymysql.config;
-
+*/
+/*
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import springfox.documentation.builders.ApiInfoBuilder;
@@ -26,7 +28,7 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
     see swagger ui at this url  http://localhost:8080/swagger-ui.html#/
 
  */
-
+/*
 @Configuration
 @EnableSwagger2
 public class Swagger2Config {
@@ -52,3 +54,4 @@ public class Swagger2Config {
     }
 
 }
+*/

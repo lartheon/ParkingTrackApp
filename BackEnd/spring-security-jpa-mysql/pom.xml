@@ -5,10 +5,10 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.1.8.RELEASE</version>
+		<version>2.2.1.RELEASE</version> <!-- 2.1.8.RELEASE  for swagger-->
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>uk.co.jenniferhalliday</groupId>
+	<groupId>parkingapp</groupId>
 	<artifactId>parking-tracker</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>parking-tracker</name>
@@ -45,23 +45,29 @@
 					<artifactId>junit-vintage-engine</artifactId>
 				</exclusion>
 			</exclusions>
-
 		</dependency>
-		<!-- io.springfox-swagger2 required for swagger front-end  -->
+
+		<!-- thymeleaf for the test login page -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-thymeleaf</artifactId>
+		</dependency>
+<!--
+		io.springfox-swagger2 required for swagger front-end
 		<dependency>
 			<groupId>io.springfox</groupId>
 			<artifactId>springfox-swagger2</artifactId>
 			<version>2.9.2</version>
 		</dependency>
 
-		<!-- io.springfox-swagger-ui required for swagger front-end  -->
+		 io.springfox-swagger-ui required for swagger front-end
 		<dependency>
 			<groupId>io.springfox</groupId>
 			<artifactId>springfox-swagger-ui</artifactId>
 			<version>2.9.2</version>
 		</dependency>
 
-		<!-- PK: Todo add spring dependancies for SpringSecurityConfig
+		 Spring dependencies for SpringSecurityConfig
 		<dependency>
 			<groupId>org.springframework.security</groupId>
 			<artifactId>spring-security-web</artifactId>
@@ -74,13 +80,15 @@
 		</dependency>
 		-->
 		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-security</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter</artifactId>
 			<version>RELEASE</version>
 			<scope>test</scope>
 		</dependency>
-
-
 	</dependencies>
 
 	<build>

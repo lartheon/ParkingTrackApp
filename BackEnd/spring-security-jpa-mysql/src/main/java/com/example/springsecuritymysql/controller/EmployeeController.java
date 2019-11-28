@@ -16,14 +16,7 @@ public class EmployeeController {
 
     @Autowired
     private EmployeeRepository repository;
-    /*
-    private final EmployeeRepository repository;
 
-
-    EmployeeController(EmployeeRepository repository) {
-        this.repository = repository;
-    }
-*/
     // Aggregate root
 
     @GetMapping("/api/employees")
@@ -61,7 +54,7 @@ public class EmployeeController {
         return repository.findByName(name);
     }
 
-    // Replace an employee
+    // Replace an employee's details - UPDATE
     // Can't alter the employeeID as its auto generated -
     @PutMapping("/api/employees/{id}")
     Employee replaceEmployee(@Valid @RequestBody Employee newEmployee, @PathVariable Long id) {
@@ -80,7 +73,7 @@ public class EmployeeController {
                 });
     }
 
-    // UPDATE - a employee record
+    // DELETE - a employee record
     @DeleteMapping("/api/employees/{id}")
     void deleteEmployee(@PathVariable Long id) {
         repository.deleteById(id);
