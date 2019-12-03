@@ -33,7 +33,7 @@ function SearchBar(props) {
           onKeyDown={e => props.handleKeyDownEvent(e)} />
           {/* <button type="submit" class="btn btn-primary mb-2">Submit</button> */}
           {/*  <input type="text" value={this.state.value} onChange={this.handleChange} /> */}
-           <input type="submit" class="btn btn-primary mb-2" value="Submit" />
+           <input type="submit" className="btn btn-primary mb-2" value="Submit" />
           
       </InputGroup>
     </div>
