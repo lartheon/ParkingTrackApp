@@ -1,5 +1,6 @@
 import React from 'react';
 import App from '../App';
+import { withRouter } from 'react-router';
 import {BrowserRouter as Router, Switch, Route, Link, useParams} from "react-router-dom";
 
 // By defeault we don't have any errors.
@@ -33,14 +34,58 @@ const initialState = {
 const validEmailRegex = RegExp(/^(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i);
 const api_endpoint = "http://localhost:8080/api/employees";
 
-export default class EmployeesForm extends React.Component {
+class EmployeesForm extends React.Component {
     // PT2: Renamed state
     // We don't need all the let statements anymore.
     state = initialState;
 
+
+
     constructor(props) {
         super(props);
-        let { id } = useParams();
+        const employeeId = this.props.match.params.employeeId;
+        console.log( employeeId );
+
+        if (employeeId) {
+            this.callAPI(employeeId);
+        }
+    }
+
+    // Calling the endpoints(API) in the server side (grabing the endpoints from the backend) to get a employee Id.
+    callAPI(employeeId) {
+        console.log(api_endpoint + "/" + employeeId);
+        fetch(api_endpoint + "/" + employeeId).then(res => res.text()).then(res => {
+            // employee object being passed into the form.
+            const employee = JSON.parse(res);
+            this.setState(employee);
+
+            
+            /*let vehicle = {};
+            if (employee.vehicles && employee.vehicles.length > 0) {
+                vehicle.regNumber = employee.vehicles[0].regNumber;
+                vehicle.make = employee.vehicles[0].make;
+                vehicle.model = employee.vehicles[0].model;
+                vehicle.colour = employee.vehicles[0].colour;
+            }
+            const formEmployee = {
+                // as we did before but the other way round.
+                firstName: employee.firstName,
+                lastName: employee.lastName,
+                permitNumber: employee.permitNumber,
+                emailAddress: employee.email,
+                skypeId: employee.skypeId,
+                department: employee.dept,
+                regNumber: vehicle.regNumber,
+                make: vehicle.make,
+                model: vehicle.model,
+                colour: vehicle.colour
+            };
+            this.setState(formEmployee);*/
+        });
+// vehicles field with an Array:
+
+
+
     }
 
 
@@ -162,6 +207,12 @@ export default class EmployeesForm extends React.Component {
         return isValid;
     };
 
+    addVehicle() {
+        // create a new element (row/ vehicle).
+        this.vehicles.push({});
+        // sets the vehicle and show on page.
+        this.setState(this.state);
+    }
 
     handleSubmit = event => {
         event.preventDefault();
@@ -177,7 +228,7 @@ export default class EmployeesForm extends React.Component {
             lastName: this.state.lastName,
             permitNumber: this.state.permitNumber,
             email: this.state.emailAddress,
-            skypeId: this.state.skypeId,
+            skype: this.state.skypeId,
             dept: this.state.department,
             vehicles: [
                /*  {
@@ -191,9 +242,14 @@ export default class EmployeesForm extends React.Component {
         // Posting data to the server. Empty string.
         // make the API Call here to pass user input to the server side?
         //  This function creates the user ID.
-        this.callPostAPI('', data);
+        if(this.state.employeeId) {
         //  This function allows employee user to UPDATER edit their card.
-        this.callPutAPI('', data);
+        // if already has an ID then its Put.
+        this.callPutAPI('', this.state);
+        } else {
+            // If don't have ID then its Post.
+        this.callPostAPI('', this.state);
+        }
 
         if (isValid) {
             console.info('Successfully validated the form');
@@ -208,6 +264,70 @@ export default class EmployeesForm extends React.Component {
     };
 
     render() {
+        let employeeCars;
+        if (this.state.vehicles) {
+        employeeCars = this.state.vehicles.map((vehicle) => { // Will return the below values from the vehicle table.
+            return (
+                <div>
+                      <h3>About Your Vehicle: </h3>
+                      <div className="form-row">
+                          <div className="form-group col-4">
+                              <label>* Vehicle Registration Number: </label>
+                              <input type="text" name="regNumber" className="form-control" 
+                              placeholder="Enter your vehicle registration number" value={vehicle.regNumber}
+                              onChange={this.handleChange} />
+                              <div style={{ fontSize: 18, color: "red" }}>{vehicle.regNumberError}</div>
+                          </div>
+                      </div>
+                      <br />
+
+                      <div className="form-row">
+                          <div className="col-md-3 mb-3">
+                              <label>* Make: </label>
+                              <input type="text" name="make" className="form-control" 
+                              placeholder="Enter the make your vehicle" value={this.state.make} 
+                              onChange={this.handleChange} />
+                              <div style={{ fontSize: 14, color: "red" }}>{this.state.makeError}</div>
+                          </div>
+
+                          <div className="col-md-3 mb-3">
+                              <label>* Model: </label>
+                              <input type="text" name="model" className="form-control" 
+                              placeholder="Enter the model your vehicle" value={this.state.model} 
+                              onChange={this.handleChange} />
+                                <div style={{ fontSize: 14, color: "red" }}>{this.state.modelError}</div>
+                          </div>
+                          <div className="col-md-3 mb-3">
+                              <label>* Colour: </label>
+                              <input type="text" name="colour" className="form-control"  
+                              placeholder="Enter the colour your vehicle" value={this.state.colour} 
+                              onChange={this.handleChange} />
+                                <div style={{ fontSize: 14, color: "red" }}>{this.state.colourError}</div>
+                              </div>
+                      </div>
+                      <br />
+                      {/* End of Vehicle Details */}
+
+                      <div className="form-group">
+                          <div className="form-check">
+                              <input className="form-check-input" name="agreed" type="checkbox" 
+                              value={this.state.agreed} onChange={this.handleChange} />
+                              <label className="form-check-label">
+                                  Agree to terms and conditions
+                              </label>
+                              <div style={{ fontSize: 14, color: "red" }}>{this.state.agreedError}</div>
+                          </div><br />
+
+                      </div>
+                  </div>
+            )
+        });
+    } else {
+        employeeCars = ()=> {
+            return <div>No vehicles found</div>
+        }
+    }
+
       return (
           <div className="container pt-4">
               <form onSubmit={this.handleSubmit}>
@@ -277,65 +397,16 @@ export default class EmployeesForm extends React.Component {
               {/*  End of Basic Contact Details. */ }
 
               {/* Start of Vehicle Details: */ }
-
-                  <div>
-                      <h3>About Your Vehicle: </h3>
-                      <div className="form-row">
-                          <div className="form-group col-4">
-                              <label>* Vehicle Registration Number: </label>
-                              <input type="text" name="regNumber" className="form-control" 
-                              placeholder="Enter your vehicle registration number" value={this.state.regNumber}
-                              onChange={this.handleChange} />
-                              <div style={{ fontSize: 18, color: "red" }}>{this.state.regNumberError}</div>
-                          </div>
-                      </div>
-                      <br />
-
-                      <div className="form-row">
-                          <div className="col-md-3 mb-3">
-                              <label>* Make: </label>
-                              <input type="text" name="make" className="form-control" 
-                              placeholder="Enter the make your vehicle" value={this.state.make} 
-                              onChange={this.handleChange} />
-                              <div style={{ fontSize: 14, color: "red" }}>{this.state.makeError}</div>
-                          </div>
-
-                          <div className="col-md-3 mb-3">
-                              <label>* Model: </label>
-                              <input type="text" name="model" className="form-control" 
-                              placeholder="Enter the model your vehicle" value={this.state.model} 
-                              onChange={this.handleChange} />
-                                <div style={{ fontSize: 14, color: "red" }}>{this.state.modelError}</div>
-                          </div>
-                          <div className="col-md-3 mb-3">
-                              <label>* Colour: </label>
-                              <input type="text" name="colour" className="form-control"  
-                              placeholder="Enter the colour your vehicle" value={this.state.colour} 
-                              onChange={this.handleChange} />
-                                <div style={{ fontSize: 14, color: "red" }}>{this.state.colourError}</div>
-                              </div>
-                      </div>
-                      <br />
-                      {/* End of Vehicle Details */}
-
-                      <div className="form-group">
-                          <div className="form-check">
-                              <input className="form-check-input" name="agreed" type="checkbox" 
-                              value={this.state.agreed} onChange={this.handleChange} />
-                              <label className="form-check-label">
-                                  Agree to terms and conditions
-                              </label>
-                              <div style={{ fontSize: 14, color: "red" }}>{this.state.agreedError}</div>
-                          </div><br />
-                          <button className="btn btn-primary" type="submit">Submit form</button>
+              <button className="btn btn-primary" type="button" onclick="addVehicle()">Add Vehicle</button>
+                  {employeeCars}
+                  <button className="btn btn-primary" type="submit">Submit form</button>
                           <Link to="/" className="btn btn-primary" role="button">Home</Link>
-                      </div>
-                  </div>
               </form>
           </div>
       );
   }
 } 
+export default withRouter(EmployeesForm);
 
 // PT: We should not need this as we are already default exporting in the classdef at the top
 // export default EmployeesForm;

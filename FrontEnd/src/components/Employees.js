@@ -71,7 +71,7 @@ function Employees(props) {
                                 <b>Permit Number:
                                 </b>
                                 {
-                                employee.permitNumber
+                                // employee.permitNumber
                             }</Card.Text>
                             <Table responsive="sm">
                                 <thead>
@@ -88,7 +88,7 @@ function Employees(props) {
 
                             {/*  Edit button link to edit Employees details/card: */}
                             
-                            <Link to="/EmployeesForm/{employee.employeeId}" className="btn btn-primary" role="button">Edit My CArd</Link>
+                            <Link to={"/EmployeesForm/" + employee.employeeId} className="btn btn-primary" role="button">Edit My CArd</Link>
 
                         </Card.Body>
                     </Card>

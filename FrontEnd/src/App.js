@@ -137,9 +137,9 @@ class App extends React.Component {
                                         employees={employees}
                                         searched={searched}/>
                                 </Route>
-                                <Route path="/EmployeesForm/:employeeId">
+                                <Route path="/EmployeesForm/:employeeId?">
                                     {/* This displays the EmployeeForm Component */}
-                                    <EmployeesForm/>
+                                    <EmployeesForm />
                                 </Route>
                             </Switch>
                         </div>
