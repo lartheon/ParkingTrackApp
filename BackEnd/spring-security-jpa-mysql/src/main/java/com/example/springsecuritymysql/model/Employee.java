@@ -46,7 +46,7 @@ public class Employee {
             name = "employees_vehicles",
             joinColumns = @JoinColumn(name = "employee_id"),
             inverseJoinColumns = @JoinColumn(name = "vehicle_id"))
-    Set<Vehicle> vehicles;
+    private Set<Vehicle> vehicles;
 
     protected Employee () {}
 
@@ -94,6 +94,10 @@ public class Employee {
         return permitNumber;
     }
 
+    public Set<Vehicle> getVehicles () {
+        return vehicles;
+    }
+
     public void setEmployeeId(Long employee_id) {
         this.employee_id = employee_id;
     }
@@ -126,3 +130,4 @@ public class Employee {
         this.vehicles = vehicles;
     }
 }
+

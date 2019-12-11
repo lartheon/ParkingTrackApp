@@ -11,7 +11,10 @@ function Employees(props) {
         console.log(JSON.stringify(props.employees));
         if (props.employees.length > 0) { // using the map method to create a new array by calling a provided function on every element in the calling array named: cards.
             cards = props.employees.map((employee) => { // This variable is named: employeeCars and the value is set to whats on the right side.
-                let employeeCars = employee.vehicles.map((vehicle) => { // Will return the below values from the vehicle table.
+                let employeeCars;
+                if (employee.vehicles) {
+
+                    employeeCars = employee.vehicles.map((vehicle) => { // Will return the below values from the vehicle table.
                     return (
                         <tr key={
                             vehicle.vehicleId
@@ -31,6 +34,11 @@ function Employees(props) {
                         </tr>
                     )
                 });
+            } else {
+                employeeCars = ()=> {
+                    return <div>No vehicles found</div>
+                }
+            }
 
 
                 // Returning values from the employees table.
@@ -41,38 +49,26 @@ function Employees(props) {
                         className="card-spacer">
                         <Card.Body> {/* These are refering to the Employee.java > @Id > private String */}
                             <Card.Title>
-                                <b>Name:
-                                </b>
-                                {
-                                employee.firstName
-                            }
-                                {
-                                employee.lastName
-                            } </Card.Title>
+                                <b>Name: </b>
+                                {employee.firstName} {employee.lastName}
+                            </Card.Title>
                             <Card.Title>
-                                <b>Email:
-                                </b>
-                                {
-                                employee.email
-                            }
-                                |
-                                <b>Skype:
-                                </b>
-                                {
-                                employee.skypeId
-                            }
-                                |
-                                <b>Department:
-                                </b>
-                                {
-                                employee.dept
-                            } </Card.Title>
+                                <b>Email:  </b>
+                                {employee.email}
+                            </Card.Title>
+                                 <Card.Title>
+                                 <b>Skype: </b>
+                                {employee.skypeId}
+                            </Card.Title>
+                            <Card.Title>
+                                <b>Department: </b>
+                                {employee.dept}
+                            </Card.Title>
+                            <br/>
                             <Card.Text>
-                                <b>Permit Number:
-                                </b>
-                                {
-                                // employee.permitNumber
-                            }</Card.Text>
+                                <b>Permit Number: </b>
+                                {employee.permitNumber}
+                            </Card.Text>
                             <Table responsive="sm">
                                 <thead>
                                     <tr>

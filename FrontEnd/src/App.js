@@ -4,6 +4,7 @@ import Employees from './components/Employees';
 import EmployeesForm from './components/EmployeesForm';
 import SearchBar from './components/SearchBar';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import Login from "./components/employeesLogin";
 import './app.css';
 
 // Is this an Object or a variable or both?
@@ -65,7 +66,6 @@ class App extends React.Component {
     }
 
 
-
     // This is the function that says what to do once an event happens (Enter key has been pressed).
     handleKeyDownEvent(event) { // 'keypress' event misbehaves on mobile so we track 'Enter' key via 'keydown' event
         if (event.key === 'Enter') {
@@ -99,12 +99,15 @@ class App extends React.Component {
                 </div>
 
                 <div className="row">
-                    <div className="col"></div>
+                
                     {/*  Router component */}
                     <Router>
                         <div>
                             <ul>
-
+                                <li className="nav-item">
+                                    <Link className="nav-link"
+                                        to={"/employeesLogin"}>Login</Link>
+                                </li>
                                 <li>
                                     <Link to="/EmployeesForm">Register Employee</Link>
                                 </li>
@@ -133,14 +136,18 @@ class App extends React.Component {
                                         handleKeyDownEvent={
                                             this.handleKeyDownEvent.bind(this)
                                         }/>
-                                        <Employees className="col-10"
+                                    <Employees className="col-10"
                                         employees={employees}
                                         searched={searched}/>
                                 </Route>
                                 <Route path="/EmployeesForm/:employeeId?">
                                     {/* This displays the EmployeeForm Component */}
-                                    <EmployeesForm />
+                                    <EmployeesForm/>
                                 </Route>
+                                <Route path='/employeesLogin'>
+                                    <Login />
+                                </Route>
+
                             </Switch>
                         </div>
                     </Router>

@@ -6,6 +6,7 @@ import Col from 'react-bootstrap/Col'; */
 import 'bootstrap/dist/css/bootstrap.min.css';
 import App from './App';
 
+
 ReactDOM.render(<App />, document.getElementById('root'));
 
 
