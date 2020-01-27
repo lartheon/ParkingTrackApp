@@ -1,24 +1,21 @@
 package com.example.springsecuritymysql.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.Set;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
-import javax.persistence.Table;
+import javax.persistence.*;
 import javax.validation.constraints.*;
 
 @Entity
 @Table(name = "employees")
 public class Employee {
+    @JsonProperty("password")
+    private String password;
 
-    @Id
-  //  @GeneratedValue(strategy= GenerationType.AUTO)
-    @GeneratedValue(strategy= GenerationType.IDENTITY)
+    @Transient
+    @JsonProperty("forDeletion")
+    private Set<VehicleForDeletion> idForDeletion;
+    @Id @GeneratedValue(strategy= GenerationType.IDENTITY)
     private Long employee_id;
 
     @NotEmpty(message = "Please provide a First name")
@@ -36,33 +33,54 @@ public class Employee {
     private String dept;
 
     @NotNull(message = "Please provide a Permit Number")
-    @Positive
-    @Max(value = 99999, message = "Must be no more than 5 digits" )
+//    @Positive
+//    @Max(value = 99999, message = "Must be no more than 5 digits" )
+    @Size(min = 1, max = 5)
     @Column(name = "permit_number")
-    private int permitNumber;
+    private String permitNumber; //LKK change, permitNumber should be String in case there are permits starting in 0.
 
-    @ManyToMany
+    @ManyToMany(cascade = {CascadeType.ALL})
     @JoinTable(
             name = "employees_vehicles",
             joinColumns = @JoinColumn(name = "employee_id"),
             inverseJoinColumns = @JoinColumn(name = "vehicle_id"))
     private Set<Vehicle> vehicles;
 
-    protected Employee () {}
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "employee_roles",
+            joinColumns = @JoinColumn(name = "employee_id" ),
+        inverseJoinColumns = @JoinColumn(name = "role_id"))
+    private Set<Role> roles;
 
-    public Employee (String firstName, String lastName, String skypeId, String email, String dept, int permitNo) {
+    protected Employee(){}
+
+    protected Employee(Employee employee) {
+        this.dept = employee.getDept();
+        this.email = employee.getEmail();
+        this.password = employee.getPassword();
+        this.firstName = employee.getFirstName();
+        this.lastName = employee.getLastName();
+        this.permitNumber = employee.getPermitNumber();
+        this.skypeId = employee.getSkypeId();
+        this.idForDeletion = employee.getForDeletion();
+    }
+
+    public Employee (String firstName, String lastName, String skypeId, String email, String password, String dept, String permitNo, Set<VehicleForDeletion> forDeletion) {
         this.dept = dept;
         this.email = email;
+        this.password = password;
         this.firstName = firstName;
         this.lastName = lastName;
         this.permitNumber = permitNo;
         this.skypeId = skypeId;
+        this.idForDeletion = forDeletion;
     }
 
     @Override
     public String toString() {
         return String.format(
-                "Employee[employee_id=%d, firstName='%s', lastName='%s', skypeId='%s', email='%s', dept='%s', permitNumber='%d']",
+                "Employee[employee_id=%d, firstName='%s', lastName='%s', skypeId='%s', email='%s', dept='%s', permitNumber='%s']",
                 employee_id, firstName, lastName, skypeId, email, dept, permitNumber);
     }
 
@@ -90,13 +108,19 @@ public class Employee {
         return dept;
     }
 
-    public Integer getPermitNumber() {
+    public String getPermitNumber() {
         return permitNumber;
     }
 
     public Set<Vehicle> getVehicles () {
         return vehicles;
     }
+
+    @JsonProperty("forDeletion")
+    public Set<VehicleForDeletion> getForDeletion() { return idForDeletion; }
+
+    @JsonProperty("forDeletion")
+    public void setForDeletion(Set<VehicleForDeletion> forDeletion) { this.idForDeletion = forDeletion; }
 
     public void setEmployeeId(Long employee_id) {
         this.employee_id = employee_id;
@@ -118,16 +142,52 @@ public class Employee {
         this.email = email;
     }
 
+    public Set<Role> getRoles() { return roles; }
+
+    public void setRoles(Set<Role> roles) { this.roles = roles; }
+
+    @JsonProperty("password")
+    public String getPassword() { return password; }
+    @JsonProperty("password")
+    public void setPassword(String password) { this.password = password; }
+
     public void setDept(String dept) {
         this.dept = dept;
     }
 
-    public void setPermitNumber(int permitNumber) {
+    public void setPermitNumber(String permitNumber) {
         this.permitNumber = permitNumber;
     }
 
     public void setVehicles(Set<Vehicle> vehicles) {
         this.vehicles = vehicles;
     }
+
+    static public class VehicleForDeletion {
+
+        @JsonProperty("vehicleId")
+        Long vehicleId;
+
+        VehicleForDeletion(){}
+
+        VehicleForDeletion(@JsonProperty("vehicleId") Long vehicleId){
+            this.vehicleId = vehicleId;
+        }
+
+        @Override
+        public String toString() {
+            return String.format(
+                    "VehicleForDeletion[vehicleId=%d]", vehicleId);
+        }
+
+        public Long getVehicleId() {
+            return vehicleId;
+        }
+
+        public void setVehicleId(Long vehicleId) {
+            this.vehicleId = vehicleId;
+        }
+    }
 }
+
 

@@ -6,7 +6,6 @@ import com.example.springsecuritymysql.model.Employee;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 
 @Service
@@ -20,10 +19,12 @@ public class ModelConverter {
         clientEmployee.setEmail(employee.getEmail());
         clientEmployee.setSkypeId(employee.getSkypeId());
         clientEmployee.setDept(employee.getDept());
+        clientEmployee.setForDeletion(employee.getForDeletion());
 
         // map all vehicles to the client employee. Create a loop.
         employee.getVehicles().forEach((vehicle)->{
             ClientVehicle clientVehicle = new ClientVehicle();
+            clientVehicle.setVehicleId(vehicle.getVehicleId());
             clientVehicle.setRegNumber(vehicle.getRegNumber());
             clientVehicle.setMake(vehicle.getMake());
             clientVehicle.setModel(vehicle.getModel());

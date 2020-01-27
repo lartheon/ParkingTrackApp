@@ -1,21 +1,31 @@
-import React from 'react';
+import React, { useState } from 'react';
 import App from '../App';
 import { withRouter } from 'react-router';
 import { BrowserRouter as Router, Switch, Route, Link, useParams } from "react-router-dom";
-
 // By defeault we don't have any errors.
+
 const initialState = {
+    employeeId: "",
     firstName: "",
     lastName: "",
     permitNumber: "",
     email: "",
     skypeId: "",
     dept: "",
+    password: "",
+    confirmPassword: "",
 
-    regNumber: "",
-    make: "",
-    model: "",
-    colour: "",
+    vehicles: [{
+        vehicleId: "",
+        regNumber: "",
+        make: "",
+        model: "",
+        colour: "",
+    }],
+
+    forDeletion: [{
+        vehicleId: "",
+    }],
 
     firstNameError: "",
     lastNameError: "",
@@ -23,28 +33,33 @@ const initialState = {
     emailAddressError: "",
     skypeIdError: "",
     departmentError: "",
+
     regNumberError: "",
     makeError: "",
     modelError: "",
     colourError: "",
+
     agreed: false,
-    agreedError: ""
+    agreedError: "",
+
+    isValid: false
 };
 // Regular Expressions or RegEx: 1. set it here but call it further down:
 const validEmailRegex = RegExp(/^(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i);
-const api_endpoint = "http://localhost:8080/api/employees";
+const api_endpoint = "http://localhost:3000/api/employees";
 
 class EmployeesForm extends React.Component {
     // PT2: Renamed state
     // We don't need all the let statements anymore.
     state = initialState;
 
-
-
     constructor(props) {
         super(props);
         const employeeId = this.props.match.params.employeeId;
         console.log(employeeId);
+
+        this.handleChange = this.handleChange.bind(this);
+        this.handleSubmit = this.handleSubmit.bind(this);
 
         if (employeeId) {
             this.callAPI(employeeId);
@@ -58,88 +73,103 @@ class EmployeesForm extends React.Component {
             // employee object being passed into the form.
             const employee = JSON.parse(res);
             this.setState(employee);
+            console.log('PRINTING EMPLOYEE DETAILS: ' + JSON.stringify(employee))
 
-
-            /*let vehicle = {};
-            if (employee.vehicles && employee.vehicles.length > 0) {
-                vehicle.regNumber = employee.vehicles[0].regNumber;
-                vehicle.make = employee.vehicles[0].make;
-                vehicle.model = employee.vehicles[0].model;
-                vehicle.colour = employee.vehicles[0].colour;
-            }
-            const formEmployee = {
-                // as we did before but the other way round.
-                firstName: employee.firstName,
-                lastName: employee.lastName,
-                permitNumber: employee.permitNumber,
-                emailAddress: employee.email,
-                skypeId: employee.skypeId,
-                department: employee.dept,
-                regNumber: vehicle.regNumber,
-                make: vehicle.make,
-                model: vehicle.model,
-                colour: vehicle.colour
-            };
-            this.setState(formEmployee);*/
         });
         // vehicles field with an Array:
 
-
-
     }
 
 
-
-
-    // Post request to server endpoint. data = JSON. Passing data from frontend to server.
+    // POST request to server endpoint. data = JSON. Passing data from frontend to server.
     callPostAPI(endpoint, data) {
-        console.log(api_endpoint + "/" + endpoint);
+        console.log('api: ' + api_endpoint + "/" + endpoint + data.employeeId);
+        console.log('data res: ' + JSON.stringify(data));
         fetch(api_endpoint + "/" + endpoint, {
             method: 'POST',
-            headers: {
+            headers:
+            {
+                // 'Access-Control-Allow-Origin': 'http://localhost:3000',
+                // "Access-Control-Allow-Credentials" : true,
+                // 'Access-Control-Allow-Methods': 'POST',
                 'Accept': 'application/json',
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify(data)
 
         })
-            .then(res => res.text())
-            .then(res => this.setState({ employees: JSON.parse(res) }));
+            .then(res => {
+
+                if (res.ok) {
+                    res.text().then(res => {
+                        localStorage.setItem('parking-employee-jwt', res);
+                        this.setState({ employees: JSON.parse(res) })
+                    });
+                    this.props.history.push("/EmployeesForm/" + this.state.employeeId)//("../") //
+                } else {
+                    console.log(res.text())
+                }
+            });
     }
 
     callPutAPI(endpoint, data) {
-        console.log(api_endpoint + "/" + endpoint);
-        fetch(api_endpoint + "/" + endpoint, {
+        console.log('callPutAPI: ' + api_endpoint + "/" + endpoint + data.employeeId);
+        console.log('callPutAPI res: ' + JSON.stringify(data));
+        fetch(api_endpoint + "/" + endpoint + data.employeeId, {
             method: 'PUT',
             headers: {
+                // 'Access-Control-Allow-Origin': 'http://localhost:3000',
+                // "Access-Control-Allow-Credentials" : true,
+                // 'Access-Control-Allow-Methods': 'PUT',
                 'Accept': 'application/json',
                 'Content-Type': 'application/json',
+
             },
             body: JSON.stringify(data)
 
         })
-            .then(res => res.text())
-            .then(res => this.setState({ employees: JSON.parse(res) }));
+            .then(res => {
+                if (res.ok) {
+                    res.text().then(res => {
+                        console.log('PUT res: ' + res);
+                        localStorage.setItem('parking-employee-jwt', res)
+                        this.setState({ employees: JSON.parse(res) })
+                    });
+                    this.props.history.push("/EmployeesForm/" + this.state.employeeId)//("../") //
+
+                } else {
+                    console.log(res.text())
+                }
+            });
     }
 
 
 
     //  Start of Basic Contact Details:
     // Is this the event handler?
-    handleChange = event => {
+    handleChange = (event) => {
+        console.log("handleChange method called")
         const isCheckbox = event.target.type === "checkbox";
 
         // PT - this will pick up field names that are not defined in the
         // state
-        if (typeof this.state[event.target.name] == 'undefined') {
+        if (typeof this.state[event.target.name] == 'undefined' ||
+            typeof this.state.vehicles[event.target.name] == 'undefined') {
             console.error(`Unknown field name ${event.target.name} - check your field names`)
         }
         // PT: Changed from stateState
         // PT: I cannot see where this is defined in the
         // state variable
-        this.setState({
-            [event.target.name]: isCheckbox ? event.target.checked : event.target.value
-        });
+        console.log("dataset name " + [event.target.name])
+        if (["regNumber", "make", "model", "colour"].includes(event.target.name)) {
+            let vehicles = [...this.state.vehicles]
+            vehicles[Number(event.target.dataset.uid)][event.target.name] = event.target.value
+            this.setState({ vehicles }, () => console.log("handling change " + this.state.vehicles))
+        } else {
+            this.setState({
+                [event.target.name]: isCheckbox ? event.target.checked : event.target.value
+            });
+        }
     };
 
     // Function named validate, when the user clicks Submit we want to validate and show any errors that exist.
@@ -170,7 +200,7 @@ class EmployeesForm extends React.Component {
         }
 
         // Regular Expressions: 2. calling it here:
-        if (!validEmailRegex.test(this.state.emailAddress)) {
+        if (!validEmailRegex.test(this.state.email)) {
             console.error('invalid email entered');
             this.setState({ emailAddressError: 'invalid email entered' });
             isValid = false;
@@ -182,35 +212,59 @@ class EmployeesForm extends React.Component {
             isValid = false;
         }
 
-        if (!this.state.department) {
+        if (!this.state.dept) {
             console.error('invalid department entered');
             this.setState({ departmentError: 'invalid department entered' });
             isValid = false;
 
         }
 
-        if (!this.state.regNumber) {
-            console.error('invalid vehicle registration number entered');
-            this.setState({ regNumberError: 'invalid registration number entered' });
-            isValid = false;
+        if (!this.state.employeeId) {
+            const { password, confirmPassword } = this.state;
+            // perform all neccassary validations
+            if (password !== confirmPassword) {
+                // alert("Passwords don't match");
+                this.setState({ passwordError: 'password does not match!' });
+                isValid = false;
+            } else {
+                // make API call
+                isValid = true;
+                this.setState({ "password": confirmPassword })
+            }
         }
 
-        if (!this.state.make) {
-            console.error('invalid make entered');
-            this.setState({ makeError: 'invalid make entered' });
-            isValid = false;
+        let v;
 
-        }
-        if (!this.state.model) {
-            console.error('invalid model entered');
-            this.setState({ modelError: 'invalid model entered' });
-            isValid = false;
-        }
+        if (this.state.vehicles) {
 
-        if (!this.state.colour) {
-            console.error('invalid colour entered');
-            this.setState({ colourError: 'invalid colour entered' });
-            isValid = false;
+            v = this.state.vehicles.map((vehicle, idx) => {
+                console.log('VALIDATING VEHICLE DETAILS ::: ' + JSON.stringify(vehicle))
+                if (!vehicle.regNumber) {
+                    console.error('invalid vehicle registration number entered : ' + this.state.vehicles[idx].regNumber);
+                    this.setState({ regNumberError: 'invalid registration number entered' });
+                    isValid = false;
+                }
+
+                if (!vehicle.make) {
+                    console.error('invalid make entered : ' + vehicle.make);
+                    this.setState({ makeError: 'invalid make entered' });
+                    isValid = false;
+
+                }
+                if (!vehicle.model) {
+                    console.error('invalid model entered : ' + vehicle.model);
+                    this.setState({ modelError: 'invalid model entered' });
+                    isValid = false;
+                }
+
+                if (!vehicle.colour) {
+                    console.error('invalid colour entered : ' + vehicle.colour);
+                    this.setState({ colourError: 'invalid colour entered' });
+                    isValid = false;
+                }
+
+                return v;
+            });
         }
 
         if (!this.state.agreed) {
@@ -222,111 +276,142 @@ class EmployeesForm extends React.Component {
         return isValid;
     };
 
-    addVehicle = () => {
+    addVehicle = (e) => {
+        console.log("addVehicle")
         // create a new element (row/ vehicle).
-        this.state.vehicles.push({});
+        this.state.vehicles.push({
+        });
         // sets the vehicle and show on page.
         this.setState(this.state);
+
     }
 
-    deleteVehicle = (vehicleId) => {
+
+    deleteVehicle = (event) => {
+        this.state.forDeletion = this.state.forDeletion || [];
+
         let index = this.state.vehicles.findIndex((vehicle) => {
             // This should give us the vehicle id that we'll delete.
-            return vehicleId === vehicle.vehicleId;
+            console.log('deleting vehicle with id: ' + vehicle.vehicleId)
+            this.state.forDeletion.push({ vehicleId: vehicle.vehicleId })
+
+            return event === vehicle.vehicleId;
         })
+
         this.state.vehicles.splice(index, 1);
         this.setState(this.state);
     }
 
-    handleSubmit = event => {
+    handleSubmit = (event) => {
         event.preventDefault();
         const isValid = this.validate();
 
-        console.log(this.state);
+        console.log('handleSubmit this state :::\n' + JSON.stringify(this.state));
         // If the form validates, we want to store the data or values into our Database but How do I do this?
         // at the moment it clears the user input on submit.
 
-        // Posting data to server.
-        const data = {
-            firstName: this.state.firstName,
-            lastName: this.state.lastName,
-            permitNumber: this.state.permitNumber,
-            email: this.state.email,
-            skype: this.state.skypeId,
-            dept: this.state.dept,
-            vehicles: [
-                /*  {
-                     reg_number: this.state.regNumber,
-                     make: this.state.make,
-                     model: this.state.model,
-                     colour: this.state.colour
-                 } */
-            ]
-        };
+        /* // Posting data to server.
+         const data = {
+             employeeId: this.state.employeeId,
+             firstName: this.state.firstName,
+             lastName: this.state.lastName,
+             permitNumber: this.state.permitNumber,
+             email: this.state.email,
+             skype: this.state.skypeId,
+             dept: this.state.dept,
+             forDeletion: this.state.forDeletion,
+             vehicles: this.state.vehicles
+         }; */
         // Posting data to the server. Empty string.
         // make the API Call here to pass user input to the server side?
         //  This function creates the user ID.
+
         if (this.state.employeeId) {
+            console.log('found employeeId: ' + this.state.employeeId + ' sending PUT request')
             //  This function allows employee user to UPDATER edit their card.
             // if already has an ID then its Put.
+            console.log('data: ' + JSON.stringify(this.state))
             this.callPutAPI('', this.state);
+            // if(isValid){
+            // this.callAPI(this.state.employeeId);
+            //    this.setState(this.state.isValid);
+            // .push("/EmployeesForm/"+this.state.employeeId);
+            // }
         } else {
             // If don't have ID then its Post.
+            console.log('no employeeId: ' + this.state.employeeId + ' sending POST request')
             this.callPostAPI('', this.state);
+            // if(isValid){
+            // this.callAPI("");
+            // this.setState(this.state.isValid);
+            // .push("/EmployeesForm");
+            // }
         }
 
         if (isValid) {
             console.info('Successfully validated the form');
             // clear form
-            this.setState(initialState);
-
-
-
+            this.setState(this.state);
         } else {
             console.error('The state is not valid');
         }
     };
 
 
+
     render() {
         let employeeCars;
         if (this.state.vehicles) {
-            employeeCars = this.state.vehicles.map((vehicle) => { // Will return the below values from the vehicle table.
-                return (
-                    <div>
 
+            employeeCars = this.state.vehicles.map((vehicle, idx) => { // Will return the below values from the vehicle table.
+
+                // console.log('vehicle: ' + vehicle.regNumber + " id: " + vehicle.vehicleId + " idx: " + idx);
+
+                return (
+                    <div key={idx} >
                         <div className="form-row">
                             <div className="form-group col-4">
                                 <label>* Vehicle Registration Number: </label>
-                                <input type="text" name="regNumber" className="form-control"
-                                    placeholder="Enter your vehicle registration number" value={vehicle.regNumber}
-                                    onChange={this.handleChange} />
+
+                                <input type="text" name="regNumber" id={"regNumber" + idx.toString()} className="form-control"
+                                    data-uid={idx}
+                                    placeholder="Enter your vehicle registration number"
+                                    defaultValue={vehicle.regNumber}
+                                    onChange={this.handleChange}
+                                />
                                 <div style={{ fontSize: 18, color: "red" }}>{vehicle.regNumberError}</div>
                             </div>
 
                             <div className="col-md-3 mb-3">
                                 <label>* Make: </label>
-                                <input type="text" name="make" className="form-control"
-                                    placeholder="Enter the make your vehicle" value={vehicle.make}
-                                    onChange={this.handleChange} />
+                                <input type="text" name="make" id={"make" + idx.toString()} className="form-control"
+                                    data-uid={idx}
+                                    placeholder="Enter the make your vehicle"
+                                    defaultValue={vehicle.make}
+                                    onChange={this.handleChange}
+                                />
                                 <div style={{ fontSize: 14, color: "red" }}>{vehicle.makeError}</div>
                             </div>
 
                             <div className="col-md-3 mb-3">
                                 <label>* Model: </label>
-                                <input type="text" name="model" className="form-control"
-                                    placeholder="Enter the model your vehicle" value={vehicle.model}
-                                    onChange={this.handleChange} />
+                                <input type="text" name="model" id={"model" + idx.toString()} className="form-control"
+                                    data-uid={idx}
+                                    placeholder="Enter the model your vehicle" defaultValue={vehicle.model}
+                                    onChange={this.handleChange}
+                                />
                                 <div style={{ fontSize: 14, color: "red" }}>{vehicle.modelError}</div>
                             </div>
                             <div className="col-md-3 mb-3">
                                 <label>* Colour: </label>
-                                <input type="text" name="colour" className="form-control"
-                                    placeholder="Enter the colour your vehicle" value={vehicle.colour}
-                                    onChange={this.handleChange} />
+                                <input type="text" name="colour" id={"colour" + idx.toString()} className="form-control"
+                                    data-uid={idx}
+                                    placeholder="Enter the colour your vehicle" defaultValue={vehicle.colour}
+                                    onChange={this.handleChange}
+                                />
                                 <div style={{ fontSize: 14, color: "red" }}>{vehicle.colourError}</div>
                             </div>
-                            <button className="btn btn-primary" type="button" onClick={() => this.deleteVehicle(vehicle.vehicleId)}>Delete Vehicle</button>
+                            <button className="btn btn-primary" type="button" data-uid={idx} id={"button" + idx.toString()} onClick={() => this.deleteVehicle(vehicle.vehicleId)}>Delete Vehicle <br />(ID: {vehicle.vehicleId})</button>
                         </div>
                         <br />
 
@@ -335,13 +420,13 @@ class EmployeesForm extends React.Component {
             });
         } else {
             employeeCars = () => {
-                return <div>No vehicles found</div>
+                return (<div>No vehicles found</div>)
             }
         }
 
         return (
             <div className="container pt-4">
-                <form onSubmit={this.handleSubmit}>
+                <form onSubmit={this.handleSubmit} >
                     {/*  <form className="needs-validation" novalidate> */}
                     <h3>Your Basic Contact Details:</h3>
 
@@ -353,54 +438,79 @@ class EmployeesForm extends React.Component {
                           Developers need to implement an event handler to capture changes with a onchange element. */}
                             {/* Capture changes of a form element using: onChange() as they happen. Update the internal
                           state in event handler. New values are saved in state and then the view is updated by a new render() */}
-                            <input type="text" name="firstName" className="form-control"
+                            <input type="text" name="firstName" id="firstName" className="form-control"
                                 placeholder="Enter your first name" value={this.state.firstName}
-                                onChange={this.handleChange} />
+                                onChange={this.handleChange}
+                            />
                             {/* Update any errors that may occure. */}
                             <div style={{ fontSize: 14, color: "red" }}>{this.state.firstNameError}</div>
                         </div>
 
                         <div className="form-group col-2">
                             <label>* Last Name: </label>
-                            <input type="text" name="lastName" className="form-control"
+                            <input type="text" name="lastName" id="lastName" className="form-control"
                                 placeholder="Enter your last name" value={this.state.lastName}
-                                onChange={this.handleChange} />
+                                onChange={this.handleChange}
+                            />
                             <div style={{ fontSize: 14, color: "red" }}>{this.state.lastNameError}</div>
 
                         </div>
 
                         <div className="form-group col-4">
                             <label>* Email Address: </label>
-                            <input type="email" name="email" className="form-control"
+                            <input type="email" name="email" id="email" className="form-control"
                                 placeholder="Enter your Email address" value={this.state.email}
-                                onChange={this.handleChange} />
+                                onChange={this.handleChange}
+                            />
                             <div style={{ fontSize: 18, color: "red" }}>{this.state.emailAddressError}</div>
                         </div>
                     </div>
                     <div className="form-row mb-3">
                         <div className="form-group col-4">
                             <label>* Skype ID: </label>
-                            <input type="text" name="skypeId" className="form-control"
+                            <input type="text" name="skypeId" id="skypeId" className="form-control"
                                 placeholder="Enter your Skype id" value={this.state.skypeId}
-                                onChange={this.handleChange} />
+                                onChange={this.handleChange}
+                            />
                             <div style={{ fontSize: 18, color: "red" }}>{this.state.skypeIdError}</div>
                         </div>
 
                         <div className="form-group col-4">
                             <label>* Department: </label>
-                            <input type="text" name="dept" className="form-control"
+                            <input type="text" name="dept" id="dept" className="form-control"
                                 placeholder="Enter your department" value={this.state.dept}
-                                onChange={this.handleChange} />
+                                onChange={this.handleChange}
+                            />
                             <div style={{ fontSize: 18, color: "red" }}>{this.state.departmentError}</div>
                         </div>
                     </div>
                     <div className="form-row mb-3">
                         <div className="form-group col-4">
                             <label>* Permit Number: </label>
-                            <input type="number" name="permitNumber" className="form-control"
+                            <input type="number" name="permitNumber" id="permitNumber" className="form-control"
                                 placeholder="Enter your permit number" value={this.state.permitNumber}
-                                onChange={this.handleChange} />
+                                onChange={this.handleChange}
+                            />
                             <div style={{ fontSize: 18, color: "red" }}>{this.state.permitNumberError}</div>
+                        </div>
+                    </div>
+                    <div className="form-row mb-3">
+                        <div className="form-group col-4">
+                            <label>* Password: </label>
+                            <input type="password" name="password" id="password" className="form-control"
+                                placeholder="Password" value={this.state.password}
+                                onChange={this.handleChange}
+                            />
+                            <div style={{ fontSize: 18, color: "red" }}>{this.state.passwordError}</div>
+                        </div>
+
+                        <div className="form-group col-4">
+                            <label>* Confirm Password: </label>
+                            <input type="password" name="confirmPassword" id="confirmPassword" className="form-control"
+                                placeholder="Confirm Password" value={this.state.confirmPassword}
+                                onChange={this.handleChange}
+                            />
+                            <div style={{ fontSize: 18, color: "red" }}>{this.state.passwordError}</div>
                         </div>
                     </div>
                     <br />
@@ -408,18 +518,22 @@ class EmployeesForm extends React.Component {
                     {/*  End of Basic Contact Details. */}
 
                     {/* Start of Vehicle Details: */}
-                    <button className="btn btn-primary" type="button" onClick={this.addVehicle}>Add Vehicle</button>
+                    <p><button className="btn btn-primary" type="button" onClick={this.addVehicle}>Add Vehicle</button></p>
                     <h3>About Your Vehicle: </h3>
                     {employeeCars}
+                    {console.log('RENDER Called :: current state is \n' + JSON.stringify(this.state))}
+
                     {/* End of Vehicle Details */}
 
                     <div className="form-group">
                         <div className="form-check">
                             <input className="form-check-input" name="agreed" type="checkbox"
-                                value={this.state.agreed} onChange={this.handleChange} />
+                                value={this.state.agreed}
+                                onChange={this.handleChange}
+                            />
                             <label className="form-check-label">
                                 Agree to terms and conditions
-                              </label>
+                            </label>
                             <div style={{ fontSize: 14, color: "red" }}>{this.state.agreedError}</div>
                         </div><br />
 

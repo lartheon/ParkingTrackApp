@@ -2,10 +2,9 @@ import React from 'react';
 import Card from 'react-bootstrap/Card';
 import Table from 'react-bootstrap/Table';
 import {BrowserRouter as Router, Switch, Route, Link} from "react-router-dom";
-
 // We are passing the props through this function named: Employee.
 function Employees(props) {
-  console.log('searched: '+JSON.stringify(props.searched));
+  console.log('Employees searched: '+JSON.stringify(props.searched));
   if (props.searched) { // Employee card as an array list of values.
         let cards = [];
         console.log(JSON.stringify(props.employees));
@@ -14,11 +13,12 @@ function Employees(props) {
                 let employeeCars;
                 if (employee.vehicles) {
 
-                    employeeCars = employee.vehicles.map((vehicle) => { // Will return the below values from the vehicle table.
+                    employeeCars = employee.vehicles.map((vehicle,idx) => { // Will return the below values from the vehicle table.
                     return (
-                        <tr key={
-                            vehicle.vehicleId
-                        }>
+                        <tr 
+                        key={idx}
+                        // key={employee.vehicles[0].vehicleId}
+                        >
                             <td>{
                                 vehicle.regNumber
                             }</td>
@@ -39,11 +39,11 @@ function Employees(props) {
                     return <div>No vehicles found</div>
                 }
             }
-
-
+                // console.log('carId: '+ employee.vehicles[0].vehicleId ?? '');
                 // Returning values from the employees table.
                 return (
-                    <Card key={
+                    <Card 
+                    key={
                             employee.employeeId
                         }
                         className="card-spacer">
@@ -78,13 +78,13 @@ function Employees(props) {
                                         <th>Colour</th>
                                     </tr>
                                 </thead>
-                                <tbody> {employeeCars} </tbody>
+                                <tbody>{employeeCars}</tbody>
                             </Table>
 
 
                             {/*  Edit button link to edit Employees details/card: */}
                             
-                            <Link to={"/EmployeesForm/" + employee.employeeId} className="btn btn-primary" role="button">Edit My CArd</Link>
+                            <Link to={"/EmployeesForm/" + employee.employeeId} className="btn btn-primary" role="button">Edit My Card</Link>
 
                         </Card.Body>
                     </Card>
@@ -109,7 +109,7 @@ function Employees(props) {
         );
     }
     return (
-        <div></div>
+        <div>nothing to return</div>
     );
 }
 

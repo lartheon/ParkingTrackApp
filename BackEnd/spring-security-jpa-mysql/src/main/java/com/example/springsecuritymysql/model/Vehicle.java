@@ -1,14 +1,7 @@
 package com.example.springsecuritymysql.model;
 
 import java.util.Set;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
-import javax.persistence.Table;
+import javax.persistence.*;
 import javax.validation.constraints.Size;
 import javax.validation.constraints.NotEmpty;
 
@@ -17,8 +10,8 @@ import javax.validation.constraints.NotEmpty;
 @Table(name = "vehicles")
 public class Vehicle {
 
-    @Id
-    @GeneratedValue(strategy= GenerationType.IDENTITY)
+//    @GeneratedValue(strategy=  GenerationType.AUTO)
+    @Id @GeneratedValue(strategy= GenerationType.IDENTITY) @Column(nullable = false, name="vehicleId")
     private Long vehicleId;
     @NotEmpty(message = "Please provide a Reg number")
     @Size( max = 10, message = "Must be less than 10 characters")
@@ -64,5 +57,25 @@ public class Vehicle {
 
     public String getColour() {
         return colour;
+    }
+
+    public void setRegNumber(String regNumber) {
+        this.regNumber = regNumber;
+    }
+
+    public void setVehicleId(Long vehicleId) {
+        this.vehicleId = vehicleId;
+    }
+
+    public void setMake(String make) {
+        this.make = make;
+    }
+
+    public void setModel(String model) {
+        this.model = model;
+    }
+
+    public void setColour(String colour) {
+        this.colour = colour;
     }
 }
