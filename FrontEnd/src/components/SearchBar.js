@@ -58,7 +58,7 @@ function SearchBar(props) {
     <div className={props.className}>
       <InputGroup className="mb-3">
         <DropdownButton
-          onSelect={function (evt) { console.log(evt);  }}
+          onSelect={function (evt) { console.log(evt); }}
           as={InputGroup.Prepend}
           variant="outline-secondary"
           title={searchAction.displayName}

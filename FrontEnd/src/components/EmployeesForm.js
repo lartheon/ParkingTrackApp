@@ -69,16 +69,34 @@ class EmployeesForm extends React.Component {
     // Calling the endpoints(API) in the server side (grabing the endpoints from the backend) to get a employee Id.
     callAPI(employeeId) {
         console.log(api_endpoint + "/" + employeeId);
-        fetch(api_endpoint + "/" + employeeId).then(res => res.text()).then(res => {
-            // employee object being passed into the form.
-            const employee = JSON.parse(res);
-            this.setState(employee);
-            console.log('PRINTING EMPLOYEE DETAILS: ' + JSON.stringify(employee))
-
-        });
+        fetch(api_endpoint + "/" + employeeId,{
+            method: 'GET',
+            headers:
+            {
+                'Authorization': localStorage.getItem('Authorization'),
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(res => 
+            {
+                console.log('auth status ' + res.statusText);
+                // res.text();
+            if(res.status === 200){
+                res.text().then(
+                    res => {
+                    const employee = JSON.parse(res);
+                    this.setState(employee);
+                    console.log('PRINTING EMPLOYEE DETAILS: ' + JSON.stringify(employee))
+                });
+             
+            }
+            }
+            
+        )};
         // vehicles field with an Array:
-
-    }
+        
+    
 
 
     // POST request to server endpoint. data = JSON. Passing data from frontend to server.
@@ -89,9 +107,7 @@ class EmployeesForm extends React.Component {
             method: 'POST',
             headers:
             {
-                // 'Access-Control-Allow-Origin': 'http://localhost:3000',
-                // "Access-Control-Allow-Credentials" : true,
-                // 'Access-Control-Allow-Methods': 'POST',
+                'Authorization': localStorage.getItem('Authorization'),
                 'Accept': 'application/json',
                 'Content-Type': 'application/json',
             },
@@ -100,7 +116,7 @@ class EmployeesForm extends React.Component {
         })
             .then(res => {
 
-                if (res.ok) {
+                if (res.status === 200) {
                     res.text().then(res => {
                         localStorage.setItem('parking-employee-jwt', res);
                         this.setState({ employees: JSON.parse(res) })
@@ -121,15 +137,16 @@ class EmployeesForm extends React.Component {
                 // 'Access-Control-Allow-Origin': 'http://localhost:3000',
                 // "Access-Control-Allow-Credentials" : true,
                 // 'Access-Control-Allow-Methods': 'PUT',
+                'Authorization': localStorage.getItem('Authorization'),
                 'Accept': 'application/json',
                 'Content-Type': 'application/json',
-
+               
             },
             body: JSON.stringify(data)
 
         })
             .then(res => {
-                if (res.ok) {
+                if (res.status === 200) {
                     res.text().then(res => {
                         console.log('PUT res: ' + res);
                         localStorage.setItem('parking-employee-jwt', res)
@@ -310,18 +327,7 @@ class EmployeesForm extends React.Component {
         // If the form validates, we want to store the data or values into our Database but How do I do this?
         // at the moment it clears the user input on submit.
 
-        /* // Posting data to server.
-         const data = {
-             employeeId: this.state.employeeId,
-             firstName: this.state.firstName,
-             lastName: this.state.lastName,
-             permitNumber: this.state.permitNumber,
-             email: this.state.email,
-             skype: this.state.skypeId,
-             dept: this.state.dept,
-             forDeletion: this.state.forDeletion,
-             vehicles: this.state.vehicles
-         }; */
+    
         // Posting data to the server. Empty string.
         // make the API Call here to pass user input to the server side?
         //  This function creates the user ID.
@@ -332,20 +338,12 @@ class EmployeesForm extends React.Component {
             // if already has an ID then its Put.
             console.log('data: ' + JSON.stringify(this.state))
             this.callPutAPI('', this.state);
-            // if(isValid){
-            // this.callAPI(this.state.employeeId);
-            //    this.setState(this.state.isValid);
-            // .push("/EmployeesForm/"+this.state.employeeId);
-            // }
+        
         } else {
             // If don't have ID then its Post.
             console.log('no employeeId: ' + this.state.employeeId + ' sending POST request')
             this.callPostAPI('', this.state);
-            // if(isValid){
-            // this.callAPI("");
-            // this.setState(this.state.isValid);
-            // .push("/EmployeesForm");
-            // }
+        
         }
 
         if (isValid) {

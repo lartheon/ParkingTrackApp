@@ -1,10 +1,10 @@
-<http use-expressions="true">
-    <intercept-url pattern="/employeeLogin*" access="isAnonymous" />
-    <intercept-url pattern="/**" access="isAuthenticated()" />
+<!--<http use-expressions="true">-->
+<!--    <intercept-url pattern="/employeeLogin*" access="isAnonymous" />-->
+<!--    <intercept-url pattern="/**" access="isAuthenticated()" />-->
 
-    <form-login login-page="EmployeesLogin.js"
-                default-target-url="/app.js"/>
-</http>
+<!--    <form-login login-page="EmployeesLogin.js"-->
+<!--                default-target-url="/app.js"/>-->
+<!--</http>-->
 
 <!-- <authentication-manager>-->
 <!--    <authentication-provider>-->

@@ -1,5 +1,7 @@
 package com.example.springsecuritymysql.model;
 
+import com.example.springsecuritymysql.security.AuthorityType;
+
 import javax.persistence.*;
 
 @Entity
@@ -11,24 +13,17 @@ public class Role {
     @Column(name = "role_id")
     private int roleId;
 
-    @Column(name = "role_type")
-//    private String role;
     @Enumerated(EnumType.STRING)
-    private AuthorityType role;
+    @Column(name = "role_type")
+     private AuthorityType role;
 
     public Role(){}
 
-    public Role(AuthorityType name){
-        this.role = role;
-    }
+    public Role(AuthorityType role){ this.role = role;}
 
-    public int getRoleId() {
-        return roleId;
-    }
+    public int getRoleId() { return roleId; }
 
-    public void setRoleId(int roleId) {
-        this.roleId = roleId;
-    }
+    public void setRoleId(int roleId) { this.roleId = roleId; }
 
     public AuthorityType getRole() {
         return role;
@@ -37,19 +32,5 @@ public class Role {
     public void setRole(AuthorityType role) {
         this.role = role;
     }
-//    public int getRoleId() {
-//        return roleId;
-//    }
-//
-//    public void setRoleId(int roleId) {
-//        this.roleId = roleId;
-//    }
 
-//    public String getRole() {
-//        return role;
-//    }
-//
-//    public void setRole(String role) {
-//        this.role = role;
-//    }
 }

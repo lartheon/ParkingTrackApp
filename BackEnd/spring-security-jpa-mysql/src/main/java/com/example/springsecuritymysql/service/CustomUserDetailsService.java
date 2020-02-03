@@ -1,11 +1,14 @@
 package com.example.springsecuritymysql.service;
 
-import com.example.springsecuritymysql.model.CustomUserDetails;
 import com.example.springsecuritymysql.model.Employee;
 import com.example.springsecuritymysql.repository.EmployeeRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.example.springsecuritymysql.security.CustomUserDetails;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -15,6 +18,53 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 
+import static java.util.Collections.emptyList;
+
+@Service
+public class CustomUserDetailsService implements UserDetailsService {
+
+    @Autowired
+    private EmployeeRepository repository;
+
+    @Override
+    @Transactional
+    public UserDetails loadUserByUsername(String emailAddress) throws UsernameNotFoundException {
+
+        Employee employee = this.repository.findEmployeeByEmail(emailAddress).orElseThrow(
+                () ->  new UsernameNotFoundException("Unable to find a user with these credentials: " + emailAddress)).get(0);
+        if(employee == null) { throw  new UsernameNotFoundException("Unable to find a user with these credentials: " + emailAddress);}
+        else { return CustomUserDetails.create(employee); }
+    }
+
+    @Transactional
+    public UserDetails loadUserById(Long id){
+        Employee employee = repository.findById(id).orElseThrow(
+                () -> new UsernameNotFoundException(("Unable to find a user with this id: " + id))
+        );
+        return CustomUserDetails.create(employee);
+    }
+/*    @Override
+    @Transactional
+    public UserDetails loadUserByUsername(String emailAddress) throws UsernameNotFoundException {
+        Employee employee = repository.findEmployeeByEmail(emailAddress)
+                .orElseThrow(() ->  new UsernameNotFoundException("Unable to find a user with these credentials: " + emailAddress)).get(0);
+              if(employee == null) { throw  new UsernameNotFoundException("Unable to find a user with these credentials: " + emailAddress);}
+              else {
+                  return new User(employee.getEmail(), employee.getPassword(), emptyList());
+//                  return CustomUserDetails.create(employee);
+              }
+    }
+
+    @Transactional
+    public UserDetails loadUserById(Long id){
+        Employee employee = repository.findById(id).orElseThrow(
+                () -> new UsernameNotFoundException(("Unable to find a user with this id: " + id))
+        );
+        return new User(employee.getEmail(), employee.getPassword(), emptyList());
+//        return CustomUserDetails.create(employee);
+    }*/
+}
+/*
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
 //    private static final Logger log = LoggerFactory.getLogger(CustomUserDetailsService.class);
@@ -46,3 +96,4 @@ public class CustomUserDetailsService implements UserDetailsService {
 //         }).get();
     }
 }
+*/

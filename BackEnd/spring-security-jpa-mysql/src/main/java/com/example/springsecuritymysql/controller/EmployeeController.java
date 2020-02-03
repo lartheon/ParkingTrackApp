@@ -1,33 +1,29 @@
 package com.example.springsecuritymysql.controller;
 
 import com.example.springsecuritymysql.clientModel.ClientEmployee;
-import com.example.springsecuritymysql.config.SpringSecurityConfig;
 import com.example.springsecuritymysql.exception.EmployeeNotFoundException;
-import com.example.springsecuritymysql.model.CustomUserDetails;
 import com.example.springsecuritymysql.model.Employee;
 import com.example.springsecuritymysql.model.Vehicle;
 import com.example.springsecuritymysql.repository.EmployeeRepository;
 import com.example.springsecuritymysql.repository.VehicleRepository;
-import com.example.springsecuritymysql.service.Salt;
+import com.example.springsecuritymysql.security.Salt;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.web.servlet.error.ErrorController;
-import org.springframework.context.annotation.Bean;
 import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCrypt;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import java.util.List;
 import java.util.Set;
+
+import static com.example.springsecuritymysql.security.SecurityConstants.*;
+import static java.util.Collections.emptyList;
 
 //@CrossOrigin(maxAge = 3600)
 //@RequestMapping("/api/employees")
@@ -36,10 +32,16 @@ import java.util.Set;
 @SessionAttributes({"currentUser"})
 @Transactional
 @RestController
-public class EmployeeController /*implements ErrorController*/ implements UserDetailsService {
+public class EmployeeController {
 
     @Autowired
     private EmployeeRepository repository;
+
+    private BCryptPasswordEncoder bCryptPasswordEncoder;
+    public EmployeeController(EmployeeRepository employeeRepository, BCryptPasswordEncoder bCryptPasswordEncoder){
+        this.repository = employeeRepository;
+        this.bCryptPasswordEncoder = bCryptPasswordEncoder;
+    }
 
     @Autowired
     private VehicleRepository vehicleRepository;
@@ -47,15 +49,9 @@ public class EmployeeController /*implements ErrorController*/ implements UserDe
     @Autowired
     private ModelConverter converter;
 
-    /*
-    private final EmployeeRepository repository;
-    EmployeeController(EmployeeRepository repository) {
-        this.repository = repository;
-    }
-*/
     // Aggregate root
 //    @CrossOrigin(origins = {"*"})
-    @GetMapping("/api/employees")
+    @GetMapping(APP_API+EMPLOYEES_URL)
     List<ClientEmployee> all() {
         List<Employee> all = repository.findAll();
         return converter.convert(all);
@@ -63,71 +59,33 @@ public class EmployeeController /*implements ErrorController*/ implements UserDe
 
     //Login employee
     @Transactional(readOnly = true)
-    @Override
+//    @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        List<Employee> optionalEmployee = employeeRepository.findByEmail(email);
+        List<Employee> optionalEmployee = repository.findByEmail(email);
 
         if (optionalEmployee != null) {
             if (!optionalEmployee.isEmpty()) {
-                return new CustomUserDetails(optionalEmployee.get(0));
+                return new User(optionalEmployee.get(0).getEmail(), optionalEmployee.get(0).getPassword(), emptyList());
             } else throw new UsernameNotFoundException("User not found. Email doesn't exist");
         } else throw new UsernameNotFoundException("User not found. Email doesn't exist");
     }
 
-    @PostMapping("/api/employeesLogin")
+    List<ClientEmployee> login(String email){
+        List<Employee> all = repository.findByEmail(email);
+        return converter.convert(all);
+    }
+    @GetMapping(APP_API+LOGIN_URL)
     @ResponseBody
-    List<ClientEmployee> login(@Valid @RequestBody LoginForm loginForm, Model model, HttpSession session){
+    List<ClientEmployee> login(@Valid @RequestBody LoginForm loginForm){
         System.out.println("server side employee login :" + loginForm.getEmail() + " " + loginForm.getPassword());
-        //authenticate user
-        //if user credentials are valid find employee using email and return id
 
-      /*UsernamePasswordAuthenticationToken authentication = (UsernamePasswordAuthenticationToken) SecurityContextHolder.getContext().getAuthentication();
-        if(validatePrinciple(authentication.getPrincipal())){
-        Employee loggedInUser = ((CustomUserDetails) authentication.getPrincipal()).getUserDetails();
-        model.addAttribute("currentUser", loggedInUser.getEmail());
-        session.setAttribute("userId", loggedInUser.getEmployeeId());
-        }*/
+            List<Employee> all = repository.findByEmail(loginForm.getEmail());
+            return converter.convert(all);
+}
 
-       /*   List<Employee> all = repository.findByEmail(loggedInUser.getEmail());*/
-       String hashedPW = SpringSecurityConfig.getPasswordEncoder().encode(loginForm.getPassword());
-        UserDetails userDetails = loadUserByUsername(loginForm.getEmail());
-        if(userDetails != null){
-            List<Employee> all = repository.findByEmail(userDetails.getUsername());
-//            for(Employee e : all){
-//                System.out.println("employeeId found: " + e.getEmployeeId());
-//            }
-            if(hashedPW.equals(all.get(0).getPassword()))
-            {
-                System.out.println("passwords match!");
-                return converter.convert(all);
-            }else{
-                System.out.println("Emails match but passwords didn't!");
-                throw new UsernameNotFoundException("Username or Password did not match our records");
-            }
-        } else throw new UsernameNotFoundException("Username or Password did not match our records");
-    }
-    private boolean validatePrinciple(Object principal) {
-        if (!(principal instanceof CustomUserDetails)) {
-            throw new  IllegalArgumentException("Principal can not be null!");
-        }else{
-            return true;
-        }
-    }
-
-    @Autowired
-    private EmployeeRepository employeeRepository;
-
-    /*  @Override
-      public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-          List<Employee> optionalEmployee = employeeRepository.findByEmail(email);
-          if(!optionalEmployee.isEmpty()){
-              return new CustomUserDetails(optionalEmployee.get(0));
-          } else return null;
-      }
-  */
     // CREATE  - employee
 //    @CrossOrigin(origins = {"*"})
-    @PostMapping("/api/employees")
+    @PostMapping(APP_API+EMPLOYEES_URL+"/")
     @ResponseBody
     ClientEmployee newEmployee(@Valid @RequestBody Employee newEmployee) {
         System.out.println("New employeeId found: " + newEmployee.getFirstName());
@@ -137,7 +95,7 @@ public class EmployeeController /*implements ErrorController*/ implements UserDe
     }
 
     // READ - Single employee
-    @GetMapping("/api/employees/{id}")
+    @GetMapping(APP_API+EMPLOYEES_URL+"/{id}")
     @ResponseBody
     ClientEmployee one(@PathVariable @Min(1) Long id) {
         System.out.println("ClientEmployee one() id: " + id);
@@ -146,18 +104,18 @@ public class EmployeeController /*implements ErrorController*/ implements UserDe
     }
 
     // Other ways to find employees
-    @GetMapping("/api/employees/searchByPermit")
+    @GetMapping(APP_API+EMPLOYEES_URL+"/searchByPermit")
     List<ClientEmployee> permitNumber(@RequestParam String number) {
         return converter.convert(repository.findByPermitNumber(number));
     }
 
-    @GetMapping("/api/employees/searchByReg")
+    @GetMapping(APP_API+EMPLOYEES_URL+"/searchByReg")
     List<ClientEmployee> regNumber(@RequestParam String reg) {
         return converter.convert(repository.findByRegNumber(reg));
     }
 
 
-    @GetMapping("/api/employees/searchByName")
+    @GetMapping(APP_API+EMPLOYEES_URL+"/searchByName")
     List<Employee> nameSearch(@RequestParam String name) {
         List<Employee> employees = repository.findByName(name);
 //        return JSONArray.toJSONString(employees);
@@ -170,7 +128,7 @@ public class EmployeeController /*implements ErrorController*/ implements UserDe
 //    @CrossOrigin(origins = {"*"})
     @Transactional
     @Modifying
-    @PutMapping("/api/employees/{id}")
+    @PutMapping(APP_API+EMPLOYEES_URL+"/{id}")
     @ResponseBody
     Employee replaceEmployee(@Valid @RequestBody Employee newEmployee, @PathVariable Long id) {
         System.out.println("replaceEmployee id: " + id.toString());
@@ -244,31 +202,18 @@ public class EmployeeController /*implements ErrorController*/ implements UserDe
 
     // UPDATE - a employee record
 //    @CrossOrigin(origins = {"*"})
-    @DeleteMapping("/api/employees/{id}")
+    @DeleteMapping(APP_API+EMPLOYEES_URL+"/{id}")
     void deleteEmployee(@PathVariable Long id) {
         repository.deleteById(id);
     }
 
     @Transactional
     @Modifying
-    @DeleteMapping("/api/vehicles/{id}")
+    @DeleteMapping(APP_API+VEHICLES_URL+"/{id}")
     void deleteVehicle(@PathVariable Long id) {
         System.out.println("VehicleController deleteVehicle : " + id);
         vehicleRepository.deleteById(id);
     }
-
-  /*  private static final String PATH = "/error";
-
-    @RequestMapping(value = PATH)
-    public String error() {
-
-        return "Error handling";
-    }
-
-    @Override
-    public String getErrorPath() {
-        return PATH;
-    }*/
 
     static public class LoginForm {
         private String email;

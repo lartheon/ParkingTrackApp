@@ -50,7 +50,14 @@ class App extends React.Component {
     // Calling the endpoints(API) in the server side (grabing the endpoints from the backend).
     callAPI(endpoint) {
         console.log(api_endpoint + "/" + endpoint);
-        fetch(api_endpoint + "/" + endpoint).then(
+        fetch(api_endpoint + "/" + endpoint,{
+            method: 'GET',
+            headers:
+            {
+                'Authorization': localStorage.getItem('Authorization'),
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+            }}).then(
             res => res.text()
         ).then(
             res => this.setState({
@@ -158,7 +165,7 @@ class App extends React.Component {
                                         href={"/employeesLogin"}>Login</a>
                                 </li>
                                 <li>
-                                    <a href="/EmployeesForm">Register Employee</a>
+                                    <a href="/employeesForm">Register Employee</a>
                                 </li>
 
                             </ul>

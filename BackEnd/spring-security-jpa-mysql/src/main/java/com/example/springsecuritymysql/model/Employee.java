@@ -1,12 +1,15 @@
 package com.example.springsecuritymysql.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.HashSet;
 import java.util.Set;
 import javax.persistence.*;
 import javax.validation.constraints.*;
 
 @Entity
+@JsonIgnoreProperties(ignoreUnknown = true)
 @Table(name = "employees")
 public class Employee {
     @JsonProperty("password")
@@ -32,6 +35,8 @@ public class Employee {
     private String email;
     private String dept;
 
+
+
     @NotNull(message = "Please provide a Permit Number")
 //    @Positive
 //    @Max(value = 99999, message = "Must be no more than 5 digits" )
@@ -51,7 +56,7 @@ public class Employee {
             name = "employee_roles",
             joinColumns = @JoinColumn(name = "employee_id" ),
         inverseJoinColumns = @JoinColumn(name = "role_id"))
-    private Set<Role> roles;
+    private Set<Role> roles = new HashSet<>();
 
     protected Employee(){}
 

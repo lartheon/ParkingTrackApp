@@ -1,5 +1,6 @@
 package com.example.springsecuritymysql.config;
 
+import com.example.springsecuritymysql.security.SpringSecurityConfig;
 import org.springframework.security.web.context.AbstractSecurityWebApplicationInitializer;
 
 public class SecurityWebApplicationInitializer

@@ -1,4 +1,4 @@
-package com.example.springsecuritymysql.service;
+package com.example.springsecuritymysql.security;
 
 import org.springframework.security.crypto.bcrypt.BCrypt;
 

@@ -4,12 +4,14 @@ import { Button, FormGroup, FormControl, ControlLabel } from "react-bootstrap";
 import { withRouter } from "react-router-dom";
 import Employees from './Employees';
 
+
 const initialLoginState = {
     email: "",
     password: "",
     checkbox: true,
 };
-
+const root_ = "http://localhost:3000"
+const api_ = "http://localhost:3000/api"
 const api_endpoint = "http://localhost:3000/api/employeesLogin";
 
 class EmployeeLogin extends React.Component {
@@ -49,33 +51,40 @@ class EmployeeLogin extends React.Component {
 
     callPostAPI(endpoint, data) {
 
-     fetch(api_endpoint + "/" + endpoint, {
-        method: 'POST',
-        headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(data)
-    })
+        fetch(api_endpoint + "/" + endpoint, {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'Authorization': ' Bearer '
+            },
+            body: JSON.stringify(data)
+        })
             .then(res => {
-                if (res.ok) {
+                if (res.status === 200) {
+                    console.log('auth status ' + res.statusText);
+                    res.headers.get("Authorization");
+                    // console.log('jwt auth?? ' + JSON.stringify(res.headers.get("Authorization")));
+                    localStorage.setItem('Authorization', res.headers.get("Authorization"));
+                    
+                    
                     res.json()
                         .then(jsonData => {
                             console.log('PUT res: ' + JSON.stringify(jsonData));
-                            localStorage.setItem('parking-login-jwt', JSON.stringify(jsonData));
+                            // this.props.history.push("/EmployeesForm/" + jsonData["id"]);
+                          var authCode = localStorage.getItem('Authorization');
 
-                            this.setState({
-                                isValid: true,
-                                searched: true,
-                                employees: jsonData,
-                            })
-                                ;
-                            //  console.log('PUT res: ' + JSON.stringify(this.state));
+                          this.props.history.push("/EmployeesForm/" + jsonData["id"])
+
                         });
+                  
                 } else {
                     console.log(res.text())
                 }
-            });
+            })
+            .then(res => { console.log(JSON.stringify(res)) })
+            .then(res => { console.log(JSON.stringify(res)) })
+            .then(res => { console.log(JSON.stringify(res)) });
     }
 
     handleSubmit = (event) => {
