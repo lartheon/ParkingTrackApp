@@ -5,6 +5,8 @@ import { BrowserRouter as Router, Switch, Route, Link, useParams } from "react-r
 // By defeault we don't have any errors.
 
 const initialState = {
+    success: false,
+    fail: false,
     employeeId: "",
     firstName: "",
     lastName: "",
@@ -14,6 +16,7 @@ const initialState = {
     dept: "",
     password: "",
     confirmPassword: "",
+    role: "",
 
     vehicles: [{
         vehicleId: "",
@@ -69,7 +72,7 @@ class EmployeesForm extends React.Component {
     // Calling the endpoints(API) in the server side (grabing the endpoints from the backend) to get a employee Id.
     callAPI(employeeId) {
         console.log(api_endpoint + "/" + employeeId);
-        fetch(api_endpoint + "/" + employeeId,{
+        fetch(api_endpoint + "/" + employeeId, {
             method: 'GET',
             headers:
             {
@@ -78,25 +81,25 @@ class EmployeesForm extends React.Component {
                 'Content-Type': 'application/json',
             },
         })
-        .then(res => 
-            {
+            .then(res => {
                 console.log('auth status ' + res.statusText);
                 // res.text();
-            if(res.status === 200){
-                res.text().then(
-                    res => {
-                    const employee = JSON.parse(res);
-                    this.setState(employee);
-                    console.log('PRINTING EMPLOYEE DETAILS: ' + JSON.stringify(employee))
-                });
-             
+                if (res.status === 200) {
+                    res.text().then(
+                        res => {
+                            const employee = JSON.parse(res);
+                            this.setState(employee);
+                            console.log('PRINTING EMPLOYEE DETAILS: ' + JSON.stringify(employee))
+                        });
+
+                }
             }
-            }
-            
-        )};
-        // vehicles field with an Array:
-        
-    
+
+            )
+    };
+    // vehicles field with an Array:
+
+
 
 
     // POST request to server endpoint. data = JSON. Passing data from frontend to server.
@@ -120,10 +123,13 @@ class EmployeesForm extends React.Component {
                     res.text().then(res => {
                         localStorage.setItem('parking-employee-jwt', res);
                         this.setState({ employees: JSON.parse(res) })
-                    });
-                    this.props.history.push("/EmployeesForm/" + this.state.employeeId)//("../") //
+                    }); this.setState({ success: true, fail : false });
+                    this.props.history.push("/EmployeesForm/" + this.state.employeeId);
+
+
                 } else {
-                    console.log(res.text())
+                    console.log(res.text());
+                    this.setState({ success: false, fail : true });
                 }
             });
     }
@@ -140,7 +146,7 @@ class EmployeesForm extends React.Component {
                 'Authorization': localStorage.getItem('Authorization'),
                 'Accept': 'application/json',
                 'Content-Type': 'application/json',
-               
+
             },
             body: JSON.stringify(data)
 
@@ -152,7 +158,8 @@ class EmployeesForm extends React.Component {
                         localStorage.setItem('parking-employee-jwt', res)
                         this.setState({ employees: JSON.parse(res) })
                     });
-                    this.props.history.push("/EmployeesForm/" + this.state.employeeId)//("../") //
+                    this.setState({ success: true, fail : false });
+                    this.props.history.push("/EmployeesForm/" + this.state.employeeId);
 
                 } else {
                     console.log(res.text())
@@ -172,7 +179,7 @@ class EmployeesForm extends React.Component {
         // state
         if (typeof this.state[event.target.name] == 'undefined' ||
             typeof this.state.vehicles[event.target.name] == 'undefined') {
-            console.error(`Unknown field name ${event.target.name} - check your field names`)
+            console.log(`Unknown field name ${event.target.name} - check your field names`)
         }
         // PT: Changed from stateState
         // PT: I cannot see where this is defined in the
@@ -327,7 +334,7 @@ class EmployeesForm extends React.Component {
         // If the form validates, we want to store the data or values into our Database but How do I do this?
         // at the moment it clears the user input on submit.
 
-    
+
         // Posting data to the server. Empty string.
         // make the API Call here to pass user input to the server side?
         //  This function creates the user ID.
@@ -338,12 +345,12 @@ class EmployeesForm extends React.Component {
             // if already has an ID then its Put.
             console.log('data: ' + JSON.stringify(this.state))
             this.callPutAPI('', this.state);
-        
+
         } else {
             // If don't have ID then its Post.
             console.log('no employeeId: ' + this.state.employeeId + ' sending POST request')
             this.callPostAPI('', this.state);
-        
+
         }
 
         if (isValid) {
@@ -362,9 +369,7 @@ class EmployeesForm extends React.Component {
         if (this.state.vehicles) {
 
             employeeCars = this.state.vehicles.map((vehicle, idx) => { // Will return the below values from the vehicle table.
-
                 // console.log('vehicle: ' + vehicle.regNumber + " id: " + vehicle.vehicleId + " idx: " + idx);
-
                 return (
                     <div key={idx} >
                         <div className="form-row">
@@ -412,7 +417,19 @@ class EmployeesForm extends React.Component {
                             <button className="btn btn-primary" type="button" data-uid={idx} id={"button" + idx.toString()} onClick={() => this.deleteVehicle(vehicle.vehicleId)}>Delete Vehicle <br />(ID: {vehicle.vehicleId})</button>
                         </div>
                         <br />
-
+                        <div>
+                            {this.state.success && (
+                                <div
+                                    className="alert alert-success"
+                                // style={{ position: 'absolute' }}
+                                > Form submitted!</div>
+                            )}
+                            {this.state.fail && (
+                                <div
+                                    className="alert alert-danger"
+                                // style={{ position: 'absolute' }}
+                                > Error submitting form!</div>
+                            )}</div>
                     </div>
                 )
             });
@@ -496,7 +513,7 @@ class EmployeesForm extends React.Component {
                         <div className="form-group col-4">
                             <label>* Password: </label>
                             <input type="password" name="password" id="password" className="form-control"
-                                placeholder="Password" value={this.state.password}
+                                placeholder="Password" value={this.state.password || ''}
                                 onChange={this.handleChange}
                             />
                             <div style={{ fontSize: 18, color: "red" }}>{this.state.passwordError}</div>

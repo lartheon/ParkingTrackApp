@@ -15,9 +15,13 @@ public class Vehicle {
     private Long vehicleId;
     @NotEmpty(message = "Please provide a Reg number")
     @Size( max = 10, message = "Must be less than 10 characters")
+    @Column(name = "regNumber")
     private String regNumber;
+    @Column(name = "make")
     private String make;
+    @Column(name = "model")
     private String model;
+    @Column(name = "colour")
     private String colour;
 
     @ManyToMany(mappedBy = "vehicles")

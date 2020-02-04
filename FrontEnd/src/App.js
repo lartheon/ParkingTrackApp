@@ -7,7 +7,8 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import Login from "./components/EmployeesLogin";
 import './app.css';
 import { Form } from 'react-bootstrap';
-
+import { createHashHistory } from 'history'
+export const history = createHashHistory();
 // Is this an Object or a variable or both?
 const api_endpoint = "http://localhost:3000/api/employees";
 
@@ -42,22 +43,25 @@ class App extends React.Component {
         this.state = {
             employees: [],
             searchAction: actions.regNumber,
-            searched: false
+            searched: false,
+            searchForm: ""
         };
-        
+        this.handleSearchSubmit = this.handleSearchSubmit.bind(this);
+        this.handleLogOut = this.handleLogOut.bind(this);
     }
 
     // Calling the endpoints(API) in the server side (grabing the endpoints from the backend).
     callAPI(endpoint) {
         console.log(api_endpoint + "/" + endpoint);
-        fetch(api_endpoint + "/" + endpoint,{
+        fetch(api_endpoint + "/" + endpoint, {
             method: 'GET',
             headers:
             {
                 'Authorization': localStorage.getItem('Authorization'),
                 'Accept': 'application/json',
                 'Content-Type': 'application/json',
-            }}).then(
+            }
+        }).then(
             res => res.text()
         ).then(
             res => this.setState({
@@ -66,10 +70,19 @@ class App extends React.Component {
         );
     }
 
-
+    handleLogOut = (event) => {
+        if (event.type === 'click') {
+            if (localStorage.getItem('Authorization') !== '' || localStorage.getItem('Authorization') != null
+                || localStorage.getItem('Authorization') !== undefined) {
+                localStorage.clear();
+                history.push("/employeesLogin");
+            }
+        }
+    }
     // The dropdown menu.
     // This is the function that says what to do once search term has been inputed. Example, just set the dropdown menu. What kind of action it is?
     handleSearchActionClick(action) { // Sets search bar to empty once the user's has inputed.
+        this.setState({ searched: false });
         document.getElementById('form-control-input').value = '';
         this.setState({ searchAction: action });
     }
@@ -77,51 +90,63 @@ class App extends React.Component {
     // This is the function that says what to do once search term has been inputted.
     handleSearchSubmit(search) {
         let action = this.state.searchAction;
+        console.log('handleSearchSubmit event: ' + action);
+
         this.callAPI(action.endpoint(search));
     }
 
 
     // This is the function that says what to do once an event happens (Enter key has been pressed).
     handleKeyDownEvent(event) { // 'keypress' event misbehaves on mobile so we track 'Enter' key via 'keydown' event
-        // console.log('event key: '+event)
-        console.log('changeHandler event: ' + event.target.value);
-        if (event.key === 'Enter') {
+        // event.preventDefault();
+        console.log('handleKeyDownEvent event: ' + event.target.value);
+
+        this.changeHandler(event);
+        if (event.key === 'Enter' || event.type === 'click') {
+            console.log('event type >' + event.type)
             this.setState({ searched: true });
             event.preventDefault();
             event.stopPropagation();
             console.log('handleSearchSubmit: ' + event.target.value)
+
             this.handleSearchSubmit(event.target.value);
         }
     }
-    changeHandler = event => {
-        console.log('changeHandler event: ' + event.text);
-        console.log('changeHandler event target: ' + event.target.value);
+    changeHandler(event) {
+        // console.log('changeHandler event: ' + event.text);
+        if (event.target.value === '') {
+            console.log('value was empty now handleSearchSubmit: ' + event.target.value)
+            event.target.value = document.getElementById('form-control-input').value
+        }
+        console.log('CHANGEHANDLER event: ' + event.target.name + ":" + event.target.value);
+        event.target.value = document.getElementById('form-control-input').value
+        this.setState({
+            [event.target.name]: event.target.value
+            // permitNumber: this.state.permitNumber,
+            // name: this.state.name,
+            // regNumber: this.state.regNumber,
+            // actions: this.state.actions,
+            // searchForm: this.state.searchForm,
+            // employees: this.state.employees,
+            // searchAction: this.state.searchAction,
+        });
 
         console.log(this.state);
-        this.setState({
-            permitNumber: this.state.permitNumber,
-            name: this.state.name,
-            regNumber: this.state.regNumber,
-            actions: this.state.actions,
-            searchForm: this.state.searchForm,
-            employees: this.state.employees,
-            searchAction: this.state.searchAction,
-        });
         // event.preventDefault();
         // event.stopPropagation();
         // this.handleSearchSubmit(event.target.value);
     }
 
     submissionHandler(event) {
-        console.log('submissionHandler event target value: ' + this.state.regNumber);
+        // console.log('submissionHandler event target value: ' + this.state.regNumber);
         event.preventDefault();
 
         this.setState({
-            permitNumber: this.state.permitNumber,
             name: this.state.name,
+            permitNumber: this.state.permitNumber,
             regNumber: this.state.regNumber,
             actions: this.state.actions,
-            searchForm: this.state.searchForm,
+            searchForm: this.state.regNumber,
             employees: this.state.employees,
             searchAction: this.state.searchAction,
             searched: true
@@ -164,8 +189,16 @@ class App extends React.Component {
                                     <a className="nav-link"
                                         href={"/employeesLogin"}>Login</a>
                                 </li>
+                                <li className="nav-item">
+                                    <a className="nav-link" href="/employeesForm">Register Employee</a>
+                                </li>
+                                <li className="nav-item">
+                                    <a className="nav-link" href="/Search">Search</a>
+                                </li>
                                 <li>
-                                    <a href="/employeesForm">Register Employee</a>
+                                    <a className="nav-link" 
+                                    onClick={this.handleLogOut.bind(this)}
+                                        href={"/signOut"}>Sign Out</a>
                                 </li>
 
                             </ul>
@@ -178,7 +211,7 @@ class App extends React.Component {
           of them to render at a time
         */}
                             <Switch>
-                                <Route exact path="/">
+                                <Route exact path="/Search">
                                     <Form>
                                         <SearchBar className="col-10"
                                             // ref="searchForm"
@@ -188,7 +221,7 @@ class App extends React.Component {
                                             searchAction={searchAction}
                                             actions={actions}
                                             // value={this.state.searchForm}
-                                            onChange={this.changeHandler}
+                                            onChange={e => this.changeHandler(e)}
                                             // There has been a click event on the search and we want to bind that click event to the search bar?
                                             // We are binding the: SearchActionClick to the: handleSearchActionClick as a prop.
                                             handleSearchActionClick={
@@ -202,8 +235,9 @@ class App extends React.Component {
 
                                         />
                                         <button form='searchForm' type="submit"
+                                            // class="btn btn-primary"
                                             onClick={e => { this.submissionHandler(e) }}
-                                        >SubmitFromAppjs</button>
+                                        >Show All</button>
                                     </Form>
                                     <Employees className="col-10"
                                         employees={employees}
@@ -213,7 +247,7 @@ class App extends React.Component {
                                     {/* This displays the EmployeeForm Component */}
                                     <EmployeesForm />
                                 </Route>
-                                <Route path='/employeesLogin'>
+                                <Route path='/'>
                                     <Login />
                                 </Route>
 

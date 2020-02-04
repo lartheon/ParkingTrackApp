@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import com.example.springsecuritymysql.exception.VehicleNotFoundException;
@@ -67,9 +68,9 @@ public class VehicleController {
             return repository.findByName(name);
         }
     */
-    @Transactional
+    /*@Transactional
     @Modifying
-//    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     @PutMapping("/api/vehicles/{id}")
     Vehicle replaceVehicle(@RequestBody Vehicle newVehicle, @PathVariable Long id) {
         return repository.findById(id)
@@ -85,7 +86,7 @@ public class VehicleController {
 //          newVehicle.setId(id);
                     return repository.save(newVehicle);
                 });
-    }
+    }*/
 
     /*
     @Transactional

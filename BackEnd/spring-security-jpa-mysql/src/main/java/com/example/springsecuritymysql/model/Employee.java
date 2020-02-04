@@ -69,6 +69,7 @@ public class Employee {
         this.permitNumber = employee.getPermitNumber();
         this.skypeId = employee.getSkypeId();
         this.idForDeletion = employee.getForDeletion();
+        this.roles = employee.getRoles();
     }
 
     public Employee (String firstName, String lastName, String skypeId, String email, String password, String dept, String permitNo, Set<VehicleForDeletion> forDeletion) {

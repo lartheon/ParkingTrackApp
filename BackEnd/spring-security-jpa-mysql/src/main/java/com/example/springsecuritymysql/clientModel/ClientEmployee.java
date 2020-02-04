@@ -1,6 +1,7 @@
 package com.example.springsecuritymysql.clientModel;
 
 import com.example.springsecuritymysql.model.Employee;
+import com.example.springsecuritymysql.model.Role;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -20,7 +21,7 @@ public class ClientEmployee {
     private String permitNumber;
     private Set<Employee.VehicleForDeletion> forDeletion = new HashSet<>();
     private Set<ClientVehicle> vehicles = new HashSet<>();
-
+    private Set<Role> roles = new HashSet<>();
 
     public String toString() {
         return String.format(
@@ -107,4 +108,8 @@ public class ClientEmployee {
     public void setPassword(String password) {
         this.password = password;
     }
+
+    public Set<Role> getRoles() { return roles; }
+
+    public void setRoles(Set<Role> roles) { this.roles = roles; }
 }

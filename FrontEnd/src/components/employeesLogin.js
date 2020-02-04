@@ -3,7 +3,8 @@ import React, { useState } from "react";
 import { Button, FormGroup, FormControl, ControlLabel } from "react-bootstrap";
 import { withRouter } from "react-router-dom";
 import Employees from './Employees';
-
+import { createHashHistory } from 'history'
+export const history = createHashHistory();
 
 const initialLoginState = {
     email: "",
@@ -21,6 +22,8 @@ class EmployeeLogin extends React.Component {
         super(props);
         // Below is the state of the App (parent) component.
         this.state = {
+            success: false,
+            fail: false,
             email: "",
             password: "",
             checkbox: true,
@@ -66,25 +69,22 @@ class EmployeeLogin extends React.Component {
                     res.headers.get("Authorization");
                     // console.log('jwt auth?? ' + JSON.stringify(res.headers.get("Authorization")));
                     localStorage.setItem('Authorization', res.headers.get("Authorization"));
-                    
-                    
+
+
                     res.json()
                         .then(jsonData => {
-                            console.log('PUT res: ' + JSON.stringify(jsonData));
-                            // this.props.history.push("/EmployeesForm/" + jsonData["id"]);
-                          var authCode = localStorage.getItem('Authorization');
+                            console.log('PUT respose: ' + JSON.stringify(jsonData));
 
-                          this.props.history.push("/EmployeesForm/" + jsonData["id"])
+                            this.setState({ success: true, fail: false });
+                            this.props.history.push("/Search");
 
                         });
-                  
+
                 } else {
                     console.log(res.text())
+                    this.setState({ success: false, fail: true });
                 }
-            })
-            .then(res => { console.log(JSON.stringify(res)) })
-            .then(res => { console.log(JSON.stringify(res)) })
-            .then(res => { console.log(JSON.stringify(res)) });
+            });
     }
 
     handleSubmit = (event) => {
@@ -138,7 +138,22 @@ class EmployeeLogin extends React.Component {
                     <p className="forgot-password text-right">
                         Forgot <a href="#">password?</a>
                     </p>
+                    <div>{this.state.success && (
+                        <div
+                            className="alert alert-success"
+                        // style={{ position: 'absolute' }}
+                        >
+                            Form submitted!
+                    </div>)}
+                        {this.state.fail && (
+                            <div
+                                className="alert alert-danger"
+                            // style={{ position: 'absolute' }}
+                            > Error submitting form!</div>
+                        )}
+                    </div>
                 </form>
+
             );
         } else {
             return (<Employees className="col-10" employees={employees} searched={searched} />)

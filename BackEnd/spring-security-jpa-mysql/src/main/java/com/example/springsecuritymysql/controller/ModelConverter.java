@@ -20,6 +20,7 @@ public class ModelConverter {
         clientEmployee.setSkypeId(employee.getSkypeId());
         clientEmployee.setDept(employee.getDept());
         clientEmployee.setForDeletion(employee.getForDeletion());
+        clientEmployee.setRoles(employee.getRoles());
 
         // map all vehicles to the client employee. Create a loop.
         employee.getVehicles().forEach((vehicle)->{

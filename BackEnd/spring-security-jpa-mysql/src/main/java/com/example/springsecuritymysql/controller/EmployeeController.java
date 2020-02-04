@@ -9,6 +9,7 @@ import com.example.springsecuritymysql.repository.VehicleRepository;
 import com.example.springsecuritymysql.security.Salt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -45,6 +46,8 @@ public class EmployeeController {
 
     @Autowired
     private VehicleRepository vehicleRepository;
+
+
 
     @Autowired
     private ModelConverter converter;
@@ -175,7 +178,7 @@ public class EmployeeController {
                     for (Vehicle dbV : dBEmployeeVehicles) {
                         if (v.getVehicleId() == dbV.getVehicleId()) {
                             System.out.println("dbEmployee table contains this vehicleId : " + v.getVehicleId());
-                            vc.replaceVehicle(v, v.getVehicleId());
+                            replaceVehicle(v, v.getVehicleId());
                             System.out.println("Updated vehicle in dbEmployee table : " + v.getVehicleId());
                         }
                     }
@@ -184,9 +187,10 @@ public class EmployeeController {
             if(vehiclesForDeletion != null){
                 System.out.println("vehiclesForDeletion' set size :" + vehiclesForDeletion.size());
                 if(vehiclesForDeletion.size() > 0){
+
                     for(Employee.VehicleForDeletion vId : vehiclesForDeletion){
                         System.out.println("Identified vehicle for deletion Id: " + vId);
-                        vehicleRepository.deleteVehicleInTable(vId.getVehicleId());
+                        vehicleRepository.deleteById(vId.getVehicleId());
                         System.out.println("Successfully deleted vehicle Id " + vId.getVehicleId());
                     }
                 }}
@@ -199,6 +203,26 @@ public class EmployeeController {
                 });
     }
 
+    //    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+    @Transactional
+    @Modifying
+    @PutMapping("/api/vehicles/{id}")
+    void replaceVehicle(@RequestBody Vehicle newVehicle, @PathVariable Long id) {
+         vehicleRepository.findById(id)
+                .map(vehicle -> {
+                    vehicle.setVehicleId(id);
+                    vehicle.setColour(newVehicle.getColour());
+                    vehicle.setMake(newVehicle.getMake());
+                    vehicle.setModel(newVehicle.getModel());
+                    vehicle.setRegNumber(newVehicle.getRegNumber());
+                    vehicleRepository.save(vehicle);
+                    return vehicle;
+                })
+                .orElseGet(() -> {
+                    vehicleRepository.save(newVehicle);
+                    return newVehicle;
+                });
+    }
 
     // UPDATE - a employee record
 //    @CrossOrigin(origins = {"*"})

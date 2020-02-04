@@ -9,13 +9,14 @@ function Employees(props) {
         let cards = [];
         console.log(JSON.stringify(props.employees));
         if (props.employees.length > 0) { // using the map method to create a new array by calling a provided function on every element in the calling array named: cards.
-            cards = props.employees.map((employee) => { // This variable is named: employeeCars and the value is set to whats on the right side.
+            cards = props.employees.map((employee,idxe) => { // This variable is named: employeeCars and the value is set to whats on the right side.
                 let employeeCars;
                 if (employee.vehicles) {
 
                     employeeCars = employee.vehicles.map((vehicle,idx) => { // Will return the below values from the vehicle table.
                     return (
                         <tr 
+                        id={employee.employeeId + '_' + idx}
                         key={idx}
                         // key={employee.vehicles[0].vehicleId}
                         >
@@ -44,7 +45,7 @@ function Employees(props) {
                 return (
                     <Card 
                     key={
-                            employee.employeeId
+                            employee.employeeId+'_'+idxe
                         }
                         className="card-spacer">
                         <Card.Body> {/* These are refering to the Employee.java > @Id > private String */}
@@ -91,14 +92,15 @@ function Employees(props) {
                 )
             });
         }
-        if (cards.length > 0) {
-            return (
-                <div className={
-                    props.className
-                }>
-                    {cards}</div>
-            );
+        
+        for(let employeeCard of cards){
+            return ( <div 
+                className={props.className}
+                id={'employee_div_' + employeeCard.employeeId}>
+                {cards}
+            </div>)
         }
+    
         let className = "alert alert-warning " + props.className;
         return (
             <div className={className}

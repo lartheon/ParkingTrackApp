@@ -1,6 +1,5 @@
 package com.example.springsecuritymysql.repository;
 
-import com.example.springsecuritymysql.model.Employee;
 import com.example.springsecuritymysql.model.Vehicle;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -8,7 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
+import java.util.Optional;
 
 public interface VehicleRepository extends JpaRepository<Vehicle, Long> {
     @Transactional
@@ -16,6 +15,11 @@ public interface VehicleRepository extends JpaRepository<Vehicle, Long> {
     @Query(value = "DELETE FROM vehicles v WHERE v.vehicle_id = ?1", nativeQuery = true)
     void deleteVehicleInTable(@Param("id") Long id);
 
+
+//    @Transactional
+//    @Modifying
+//    @Query(value = "SELECT * FROM vehicles v WHERE v.vehicle_id = ?1", nativeQuery = true)
+//    Optional<Vehicle> findById(@Param("id") Long id);
 /*
     List<Vehicle> findByReg(int regNumber);
     @Query(
