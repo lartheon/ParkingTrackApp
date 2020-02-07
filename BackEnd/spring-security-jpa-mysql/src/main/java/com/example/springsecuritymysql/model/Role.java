@@ -1,29 +1,52 @@
 package com.example.springsecuritymysql.model;
 
 import com.example.springsecuritymysql.security.AuthorityType;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.persistence.*;
+import java.util.Collection;
+import java.util.Set;
 
 @Entity
+@JsonIgnoreProperties(ignoreUnknown = true)
 @Table(name = "roles")
 public class Role {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "role_id")
-    private int roleId;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "role_id", nullable = false)
+    private Long roleId;
+
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "role_type")
+    @JsonProperty("role")
+    @Column(name = "role_type", nullable = false, columnDefinition = "TEXT default ROLE_USER")
      private AuthorityType role;
+
+    @ManyToMany(mappedBy = "roles")
+    Collection<Employee> employees;
 
     public Role(){}
 
+    public Role(Long roleId, AuthorityType role){
+        this.roleId = roleId;
+        this.role = role;
+    }
+    public static Role create(Long roleId){
+        AuthorityType authorityType;
+        if(roleId == 1){
+            authorityType = AuthorityType.ROLE_ADMIN;
+        }else{
+            authorityType = AuthorityType.ROLE_USER;
+        }
+        return new Role(roleId, authorityType);
+    }
     public Role(AuthorityType role){ this.role = role;}
 
-    public int getRoleId() { return roleId; }
+    public Long getRoleId() { return roleId; }
 
-    public void setRoleId(int roleId) { this.roleId = roleId; }
+    public void setRoleId(Long roleId) { this.roleId = roleId; }
 
     public AuthorityType getRole() {
         return role;

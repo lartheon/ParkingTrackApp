@@ -7,6 +7,9 @@ import { BrowserRouter as Router, Switch, Route, Link, useParams } from "react-r
 const initialState = {
     success: false,
     fail: false,
+    error401: false,
+    error401POST: false,
+    error500: false,
     employeeId: "",
     firstName: "",
     lastName: "",
@@ -104,13 +107,13 @@ class EmployeesForm extends React.Component {
 
     // POST request to server endpoint. data = JSON. Passing data from frontend to server.
     callPostAPI(endpoint, data) {
-        console.log('api: ' + api_endpoint + "/" + endpoint + data.employeeId);
-        console.log('data res: ' + JSON.stringify(data));
-        fetch(api_endpoint + "/" + endpoint, {
+        console.log('POST api: ' + api_endpoint + "/");
+        // console.log('data res: ' + JSON.stringify(data));
+        fetch(api_endpoint + "/", {
             method: 'POST',
             headers:
             {
-                'Authorization': localStorage.getItem('Authorization'),
+                // 'Authorization': localStorage.getItem('Authorization'),
                 'Accept': 'application/json',
                 'Content-Type': 'application/json',
             },
@@ -122,21 +125,36 @@ class EmployeesForm extends React.Component {
                 if (res.status === 200) {
                     res.text().then(res => {
                         localStorage.setItem('parking-employee-jwt', res);
-                        this.setState({ employees: JSON.parse(res) })
-                    }); this.setState({ success: true, fail : false });
-                    this.props.history.push("/EmployeesForm/" + this.state.employeeId);
+                        this.setState({ employees: JSON.parse(res) });
 
+                        this.setState({ success: true, fail: false, error401POST: false, error401: false, error500: false });
+                        setTimeout(function () {
+                            this.props.history.push("/EmployeesForm/" + this.state.employees.employeeId);
+                            this.setState({ success: false, fail: false, error401POST: false, error401: false, error500: false });
+                        }.bind(this), 1000);
 
-                } else {
-                    console.log(res.text());
-                    this.setState({ success: false, fail : true });
+                    });
+                }
+                if (res.status === 401) {
+                    //permission denied
+                    console.error('permission denied: ' + res.status);
+                    this.setState({ error401POST: true, error401: false, error500: false });
+                }
+                if (res.status === 500) {
+                    //server error
+                    console.error('server error: ' + res.status);
+                    this.setState({ error401POST: false, error401: false, error500: true });
+                }
+                else {
+                    console.log(res.status + " " + res.statusText);
+                    this.setState({ success: false, fail: true });
                 }
             });
     }
 
     callPutAPI(endpoint, data) {
         console.log('callPutAPI: ' + api_endpoint + "/" + endpoint + data.employeeId);
-        console.log('callPutAPI res: ' + JSON.stringify(data));
+        // console.log('callPutAPI res: ' + JSON.stringify(data));
         fetch(api_endpoint + "/" + endpoint + data.employeeId, {
             method: 'PUT',
             headers: {
@@ -158,11 +176,24 @@ class EmployeesForm extends React.Component {
                         localStorage.setItem('parking-employee-jwt', res)
                         this.setState({ employees: JSON.parse(res) })
                     });
-                    this.setState({ success: true, fail : false });
-                    this.props.history.push("/EmployeesForm/" + this.state.employeeId);
-
+                    this.setState({ success: true, fail: false });
+                    // this.props.history.push("/EmployeesForm/" + this.state.employeeId);
+                    setTimeout(function () {
+                        this.props.history.push("/EmployeesForm/" + this.state.employeeId);
+                        this.setState({ success: false, fail: false, error401POST: false, error401: false, error500: false });
+                    }.bind(this), 1000);
+                }
+                if (res.status === 401) {
+                    //permission denied
+                    console.error('permission denied: ' + res.status);
+                    this.setState({ error401: true, error500: false });
+                }
+                if (res.status === 500) {
+                    //server error
+                    console.error('server error: ' + res.status);
+                    this.setState({ error401: false, error500: true });
                 } else {
-                    console.log(res.text())
+                    console.error(res.status + " " + res.statusText)
                 }
             });
     }
@@ -191,7 +222,14 @@ class EmployeesForm extends React.Component {
             this.setState({ vehicles }, () => console.log("handling change " + this.state.vehicles))
         } else {
             this.setState({
-                [event.target.name]: isCheckbox ? event.target.checked : event.target.value
+                [event.target.name]: isCheckbox ? event.target.checked : event.target.value,
+                firstNameError: "",
+                lastNameError: "",
+                permitNumberError: "",
+                emailAddressError: "",
+                skypeIdError: "",
+                departmentError: "",
+                passwordError: ""
             });
         }
     };
@@ -338,34 +376,39 @@ class EmployeesForm extends React.Component {
         // Posting data to the server. Empty string.
         // make the API Call here to pass user input to the server side?
         //  This function creates the user ID.
-
-        if (this.state.employeeId) {
-            console.log('found employeeId: ' + this.state.employeeId + ' sending PUT request')
-            //  This function allows employee user to UPDATER edit their card.
-            // if already has an ID then its Put.
-            console.log('data: ' + JSON.stringify(this.state))
-            this.callPutAPI('', this.state);
-
-        } else {
-            // If don't have ID then its Post.
-            console.log('no employeeId: ' + this.state.employeeId + ' sending POST request')
-            this.callPostAPI('', this.state);
-
-        }
-
         if (isValid) {
             console.info('Successfully validated the form');
             // clear form
             this.setState(this.state);
+
+            if (this.state.employeeId) {
+                console.log('found employeeId: ' + this.state.employeeId + ' sending PUT request')
+                //  This function allows employee user to UPDATER edit their card.
+                // if already has an ID then its Put.
+                console.log('data: ' + JSON.stringify(this.state))
+                this.callPutAPI('', this.state);
+
+            } else {
+                // If we don't have ID then its Post.
+                this.setState({role: "ROLE_USER"});
+                console.log('no employeeId: ' + this.state.employeeId + ' sending POST request')
+                this.callPostAPI('', this.state);
+
+            }
         } else {
             console.error('The state is not valid');
         }
+
     };
 
 
 
     render() {
         let employeeCars;
+        let error401POST = this.state.error401POST;
+        let error401 = this.state.error401;
+        let error500 = this.state.error500;
+
         if (this.state.vehicles) {
 
             employeeCars = this.state.vehicles.map((vehicle, idx) => { // Will return the below values from the vehicle table.
@@ -417,19 +460,6 @@ class EmployeesForm extends React.Component {
                             <button className="btn btn-primary" type="button" data-uid={idx} id={"button" + idx.toString()} onClick={() => this.deleteVehicle(vehicle.vehicleId)}>Delete Vehicle <br />(ID: {vehicle.vehicleId})</button>
                         </div>
                         <br />
-                        <div>
-                            {this.state.success && (
-                                <div
-                                    className="alert alert-success"
-                                // style={{ position: 'absolute' }}
-                                > Form submitted!</div>
-                            )}
-                            {this.state.fail && (
-                                <div
-                                    className="alert alert-danger"
-                                // style={{ position: 'absolute' }}
-                                > Error submitting form!</div>
-                            )}</div>
                     </div>
                 )
             });
@@ -438,7 +468,18 @@ class EmployeesForm extends React.Component {
                 return (<div>No vehicles found</div>)
             }
         }
-
+        const empId = this.state.employeeId;
+        function disableField(){
+        if(empId){
+                      return true;          
+        }}
+        function passwordMSG(){
+            if(empId){
+                return 'Change Password?'
+            }else{
+                return '* Password:'
+            }
+        }
         return (
             <div className="container pt-4">
                 <form onSubmit={this.handleSubmit} >
@@ -453,8 +494,8 @@ class EmployeesForm extends React.Component {
                           Developers need to implement an event handler to capture changes with a onchange element. */}
                             {/* Capture changes of a form element using: onChange() as they happen. Update the internal
                           state in event handler. New values are saved in state and then the view is updated by a new render() */}
-                            <input type="text" name="firstName" id="firstName" className="form-control"
-                                placeholder="Enter your first name" value={this.state.firstName}
+                            <input type="text" name="firstName" id="firstName" className="form-control" 
+                                placeholder="Enter your first name" value={this.state.firstName} disabled = {disableField()}
                                 onChange={this.handleChange}
                             />
                             {/* Update any errors that may occure. */}
@@ -464,7 +505,7 @@ class EmployeesForm extends React.Component {
                         <div className="form-group col-2">
                             <label>* Last Name: </label>
                             <input type="text" name="lastName" id="lastName" className="form-control"
-                                placeholder="Enter your last name" value={this.state.lastName}
+                                placeholder="Enter your last name" value={this.state.lastName} disabled = {disableField()}
                                 onChange={this.handleChange}
                             />
                             <div style={{ fontSize: 14, color: "red" }}>{this.state.lastNameError}</div>
@@ -511,7 +552,7 @@ class EmployeesForm extends React.Component {
                     </div>
                     <div className="form-row mb-3">
                         <div className="form-group col-4">
-                            <label>* Password: </label>
+                            <label>{passwordMSG()} </label>
                             <input type="password" name="password" id="password" className="form-control"
                                 placeholder="Password" value={this.state.password || ''}
                                 onChange={this.handleChange}
@@ -553,11 +594,27 @@ class EmployeesForm extends React.Component {
                         </div><br />
 
                     </div>
-
+                    {error401POST && (
+                        <div className="alert alert-danger"><span aria-label='permission denied' role="img">🚫</span> Permission Denied! A user with this email already exists!</div>
+                    )}
+                    {error401 && (
+                        <div className="alert alert-danger"><span aria-label='permission denied' role="img">🚫</span> Permission Denied! You need to login to perform this action!</div>
+                    )}
+                    {error500 && (
+                        <div className="alert alert-danger"><span aria-label='shrug' role="img">🤷</span> Oops! Something went wrong on our end!</div>
+                    )}
+                    <div>
+                        {this.state.success && (
+                            <div
+                                className="alert alert-success"
+                            > Form submitted!</div>
+                        )}
+                    </div>
                     <button className="btn btn-primary" type="submit">Submit form</button>
                     <Link to="/" className="btn btn-primary" role="button">Home</Link>
 
                 </form>
+
             </div>
         );
     }

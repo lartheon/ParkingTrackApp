@@ -2,12 +2,14 @@ package com.example.springsecuritymysql.security;
 
 
 import com.example.springsecuritymysql.model.Employee;
+import com.example.springsecuritymysql.model.Role;
 import net.minidev.json.annotate.JsonIgnore;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -42,9 +44,14 @@ public class CustomUserDetails implements UserDetails {
     }
 
     public static CustomUserDetails create(Employee employee){
+
         List<GrantedAuthority> authorities = employee.getRoles().stream().map(
                 role -> new SimpleGrantedAuthority(role.getRole().name())
         ).collect(Collectors.toList());
+
+        if(authorities.isEmpty() && employee.getEmployeeId() != 1){ //check employee id isn't the admin account
+            authorities = Collections.singletonList((GrantedAuthority) new SimpleGrantedAuthority(AuthorityType.ROLE_USER.name()));
+        }
 
         return new CustomUserDetails(
                 employee.getEmployeeId(),

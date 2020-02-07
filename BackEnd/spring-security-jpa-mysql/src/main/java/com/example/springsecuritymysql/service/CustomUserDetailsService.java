@@ -2,6 +2,7 @@ package com.example.springsecuritymysql.service;
 
 import com.example.springsecuritymysql.model.Employee;
 import com.example.springsecuritymysql.repository.EmployeeRepository;
+import com.example.springsecuritymysql.repository.RoleRepository;
 import com.example.springsecuritymysql.repository.VehicleRepository;
 import com.example.springsecuritymysql.security.CustomUserDetails;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +30,9 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Autowired
     private VehicleRepository vRepository;
+
+    @Autowired
+    private RoleRepository roleRepository;
 
     @Override
     @Transactional

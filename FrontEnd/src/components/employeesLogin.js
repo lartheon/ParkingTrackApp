@@ -22,6 +22,8 @@ class EmployeeLogin extends React.Component {
         super(props);
         // Below is the state of the App (parent) component.
         this.state = {
+            error401: false,
+            error500: false,
             success: false,
             fail: false,
             email: "",
@@ -80,8 +82,20 @@ class EmployeeLogin extends React.Component {
 
                         });
 
-                } else {
-                    console.log(res.text())
+                } 
+                if(res.status === 401){
+                    //permission denied
+                    console.error('permission denied: ' + res.status);
+                    this.setState({ error401: true, error500: false });
+                }
+                if(res.status === 500){
+                    //server error
+                    console.error('server error: ' + res.status);
+                    this.setState({ error401: false, error500: true });
+                }
+                
+                else {
+                    console.log(res.status + " " + res.body)
                     this.setState({ success: false, fail: true });
                 }
             });
@@ -101,6 +115,8 @@ class EmployeeLogin extends React.Component {
         let employees = this.state.employees;
         let isValid = this.state.isValid;
         let searched = this.state.searched;
+        let error401 = this.state.error401;
+        let error500 = this.state.error500;
 
         if (!searched || !isValid) {
             return (
@@ -141,16 +157,15 @@ class EmployeeLogin extends React.Component {
                     <div>{this.state.success && (
                         <div
                             className="alert alert-success"
-                        // style={{ position: 'absolute' }}
-                        >
-                            Form submitted!
+                        >Form submitted!
                     </div>)}
-                        {this.state.fail && (
-                            <div
-                                className="alert alert-danger"
-                            // style={{ position: 'absolute' }}
-                            > Error submitting form!</div>
-                        )}
+                       
+                        {error401 && (
+                            <div className="alert alert-danger"><span aria-label='permission denied' role="img">🚫</span> Unable to login, either the username or password is incorrect!</div>
+                                 )}
+                        {error500 && (
+                            <div className="alert alert-danger"><span aria-label='shrug' role="img">🤷</span> Oops! Something went wrong on our server</div>
+                                 )}
                     </div>
                 </form>
 

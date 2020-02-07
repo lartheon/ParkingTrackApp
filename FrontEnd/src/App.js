@@ -41,6 +41,9 @@ class App extends React.Component {
         super(props);
         // Below is the state of the App (parent) component.
         this.state = {
+            error401: false,
+            error403: false,
+            error500: false,
             employees: [],
             searchAction: actions.regNumber,
             searched: false,
@@ -61,12 +64,32 @@ class App extends React.Component {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json',
             }
-        }).then(
-            res => res.text()
-        ).then(
-            res => this.setState({
-                employees: JSON.parse(res)
-            })
+        })
+        //if res == 401 user hasn't logged in
+        .then(
+            res => {
+                // res.text()
+                if(res.status === 200){
+                    res.text().then(
+                        res => this.setState({employees: JSON.parse(res)})
+                    ); 
+                }
+                if(res.status === 401){
+                    //permission denied
+                    console.error('permission denied: ' + res.status);
+                    this.setState({ error401: true, error403: false, error500: false });
+                }
+                if(res.status === 403){
+                    //permission denied
+                    console.error('permission denied: ' + res.status);
+                    this.setState({ error403: true, error401: false, error500: false });
+                }
+                if(res.status === 500){
+                    //server error
+                    console.error('server error: ' + res.status);
+                    this.setState({ error401: false, error403: false, error500: true });
+                }
+            }
         );
     }
 
@@ -161,11 +184,14 @@ class App extends React.Component {
         let employees = this.state.employees;
         let searchAction = this.state.searchAction;
         let searched = this.state.searched;
+        let error401 = this.state.error401;
+        let error500 = this.state.error500;
+        let error403 = this.state.error403;
 
         // generating the HTML:
         return (
-            <div className="container">
-                <div className="row">
+            <div className="container ">
+                <div className="row d-flex justify-content-center text-center">
                     <div className="col"></div>
                     <div className="col-10">
                         <h1><a href="/">Employee Vehicle Database</a></h1>
@@ -179,37 +205,37 @@ class App extends React.Component {
                         {/* This is the SearchBar component */} </div>
                 </div>
 
-                <div className="row">
+                <div className="row d-flex justify-content-center">
 
                     {/*  Router component */}
                     <Router>
                         <div>
-                            <ul>
+                            <ul className="nav row d-flex justify-content-center text-center">
                                 <li className="nav-item">
                                     <a className="nav-link"
-                                        href={"/employeesLogin"}>Login</a>
+                                        href={"/employeesLogin/"}>Login</a>
                                 </li>
                                 <li className="nav-item">
-                                    <a className="nav-link" href="/employeesForm">Register Employee</a>
+                                    <a className="nav-link" href="/employeesForm/">Register An Employee</a>
                                 </li>
                                 <li className="nav-item">
-                                    <a className="nav-link" href="/Search">Search</a>
+                                    <a className="nav-link" href="/Search/">Search</a>
                                 </li>
                                 <li>
                                     <a className="nav-link" 
                                     onClick={this.handleLogOut.bind(this)}
-                                        href={"/signOut"}>Sign Out</a>
+                                        href={"/signOut/"}>Sign Out</a>
                                 </li>
 
                             </ul>
 
                             <hr /> {/*
-          A <Switch> looks through all its children <Route>
-          elements and renders the first one whose path
-          matches the current URL. Use a <Switch> any time
-          you have multiple routes, but you want only one
-          of them to render at a time
-        */}
+                                    A <Switch> looks through all its children <Route>
+                                    elements and renders the first one whose path
+                                    matches the current URL. Use a <Switch> any time
+                                    you have multiple routes, but you want only one
+                                    of them to render at a time
+                                    */}
                             <Switch>
                                 <Route exact path="/Search">
                                     <Form>
@@ -233,9 +259,15 @@ class App extends React.Component {
                                                 this.handleKeyDownEvent.bind(this)
                                             }
 
-                                        />
+                                        /> 
+                            {(error401 || error403) && (
+                            <div className="alert alert-danger"><span aria-label='permission denied' role="img">🚫</span> Permission Denied! You need to login to perform this action!</div>
+                                 )}
+                            {error500 && (
+                            <div className="alert alert-danger"><span aria-label='shrug' role="img">🤷</span> Oops! Something went wrong </div>
+                                 )}
                                         <button form='searchForm' type="submit"
-                                            // class="btn btn-primary"
+                                            className="btn btn-outline-primary mb-3"
                                             onClick={e => { this.submissionHandler(e) }}
                                         >Show All</button>
                                     </Form>
@@ -243,6 +275,7 @@ class App extends React.Component {
                                         employees={employees}
                                         searched={searched} />
                                 </Route>
+                               
                                 <Route path="/EmployeesForm/:employeeId?">
                                     {/* This displays the EmployeeForm Component */}
                                     <EmployeesForm />

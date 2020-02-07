@@ -3,10 +3,13 @@ package com.example.springsecuritymysql.model;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.util.HashSet;
-import java.util.Set;
 import javax.persistence.*;
-import javax.validation.constraints.*;
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
+import java.util.Collection;
+import java.util.Set;
 
 @Entity
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -18,6 +21,7 @@ public class Employee {
     @Transient
     @JsonProperty("forDeletion")
     private Set<VehicleForDeletion> idForDeletion;
+
     @Id @GeneratedValue(strategy= GenerationType.IDENTITY)
     private Long employee_id;
 
@@ -35,11 +39,7 @@ public class Employee {
     private String email;
     private String dept;
 
-
-
     @NotNull(message = "Please provide a Permit Number")
-//    @Positive
-//    @Max(value = 99999, message = "Must be no more than 5 digits" )
     @Size(min = 1, max = 5)
     @Column(name = "permit_number")
     private String permitNumber; //LKK change, permitNumber should be String in case there are permits starting in 0.
@@ -51,12 +51,13 @@ public class Employee {
             inverseJoinColumns = @JoinColumn(name = "vehicle_id"))
     private Set<Vehicle> vehicles;
 
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+//    @JsonProperty("role")
+    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, targetEntity= Role.class)
     @JoinTable(
             name = "employee_roles",
-            joinColumns = @JoinColumn(name = "employee_id" ),
-        inverseJoinColumns = @JoinColumn(name = "role_id"))
-    private Set<Role> roles = new HashSet<>();
+            joinColumns = @JoinColumn(name = "employee_id", referencedColumnName = "employee_id" ),
+            inverseJoinColumns = @JoinColumn(name = "role_id", referencedColumnName = "role_id"))
+    private Collection<Role> roles;
 
     protected Employee(){}
 
@@ -72,7 +73,16 @@ public class Employee {
         this.roles = employee.getRoles();
     }
 
-    public Employee (String firstName, String lastName, String skypeId, String email, String password, String dept, String permitNo, Set<VehicleForDeletion> forDeletion) {
+    public Employee (String firstName,
+                     String lastName,
+                     String skypeId,
+                     String email,
+                     String password,
+                     String dept,
+                     String permitNo,
+                     Set<VehicleForDeletion> forDeletion,
+                     Set<Role> roles)
+    {
         this.dept = dept;
         this.email = email;
         this.password = password;
@@ -81,6 +91,7 @@ public class Employee {
         this.permitNumber = permitNo;
         this.skypeId = skypeId;
         this.idForDeletion = forDeletion;
+        this.roles = roles;
     }
 
     @Override
@@ -148,9 +159,9 @@ public class Employee {
         this.email = email;
     }
 
-    public Set<Role> getRoles() { return roles; }
+    public Collection<Role> getRoles() { return roles; }
 
-    public void setRoles(Set<Role> roles) { this.roles = roles; }
+    public void setRoles(Collection<Role> roles) { this.roles = roles; }
 
     @JsonProperty("password")
     public String getPassword() { return password; }

@@ -3,13 +3,12 @@ package com.example.springsecuritymysql.clientModel;
 import com.example.springsecuritymysql.model.Employee;
 import com.example.springsecuritymysql.model.Role;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
 
 public class ClientEmployee {
-
-    //  @GeneratedValue(strategy= GenerationType.AUTO)
 
     private Long employee_id;
     private String firstName;
@@ -21,7 +20,7 @@ public class ClientEmployee {
     private String permitNumber;
     private Set<Employee.VehicleForDeletion> forDeletion = new HashSet<>();
     private Set<ClientVehicle> vehicles = new HashSet<>();
-    private Set<Role> roles = new HashSet<>();
+    private Collection<Role> roles = new HashSet<>();
 
     public String toString() {
         return String.format(
@@ -109,7 +108,7 @@ public class ClientEmployee {
         this.password = password;
     }
 
-    public Set<Role> getRoles() { return roles; }
+    public Collection<Role> getRoles() { return roles; }
 
-    public void setRoles(Set<Role> roles) { this.roles = roles; }
+    public void setRoles(Collection<Role> roles) { this.roles = roles; }
 }

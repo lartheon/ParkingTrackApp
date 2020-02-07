@@ -12,7 +12,6 @@ function Employees(props) {
             cards = props.employees.map((employee,idxe) => { // This variable is named: employeeCars and the value is set to whats on the right side.
                 let employeeCars;
                 if (employee.vehicles) {
-
                     employeeCars = employee.vehicles.map((vehicle,idx) => { // Will return the below values from the vehicle table.
                     return (
                         <tr 
@@ -44,7 +43,10 @@ function Employees(props) {
                 // Returning values from the employees table.
                 return (
                     <Card 
-                    key={
+                    id = {
+                        "employee_"+employee.employeeId+'_'+idxe
+                    }
+                    key = {
                             employee.employeeId+'_'+idxe
                         }
                         className="card-spacer">
@@ -91,12 +93,17 @@ function Employees(props) {
                     </Card>
                 )
             });
+        }else{
+            return (
+        <div className="alert alert-info mt-3" role="alert" >Search query returned no results</div>
+    );
         }
-        
+
         for(let employeeCard of cards){
             return ( <div 
-                className={props.className}
-                id={'employee_div_' + employeeCard.employeeId}>
+                className={" justify-content-center" } 
+                id={'employee_div_card'}
+                >
                 {cards}
             </div>)
         }
@@ -106,13 +113,11 @@ function Employees(props) {
             <div className={className}
                 role="alert">
                 {/* Unable to find any employees matching that search criteria. */}
-                <p>Alrt! Invalid Input. Please enter a valid search term.</p>
+                <p>Unable to find any employees matching that search criteria.</p>
             </div>
         );
     }
-    return (
-        <div>nothing to return</div>
-    );
+    return (<div></div>);
 }
 
 export default Employees;

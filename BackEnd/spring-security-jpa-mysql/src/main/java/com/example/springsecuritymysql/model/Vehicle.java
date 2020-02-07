@@ -1,5 +1,7 @@
 package com.example.springsecuritymysql.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import java.util.Set;
 import javax.persistence.*;
 import javax.validation.constraints.Size;
@@ -7,6 +9,7 @@ import javax.validation.constraints.NotEmpty;
 
 
 @Entity
+@JsonIgnoreProperties(ignoreUnknown = true)
 @Table(name = "vehicles")
 public class Vehicle {
 

@@ -2,14 +2,18 @@ package com.example.springsecuritymysql.controller;
 
 import com.example.springsecuritymysql.clientModel.ClientEmployee;
 import com.example.springsecuritymysql.exception.EmployeeNotFoundException;
+import com.example.springsecuritymysql.exception.UserAlreadyExistAuthenticationException;
 import com.example.springsecuritymysql.model.Employee;
+import com.example.springsecuritymysql.model.Role;
 import com.example.springsecuritymysql.model.Vehicle;
 import com.example.springsecuritymysql.repository.EmployeeRepository;
+import com.example.springsecuritymysql.repository.RoleRepository;
 import com.example.springsecuritymysql.repository.VehicleRepository;
+import com.example.springsecuritymysql.security.AuthorityType;
 import com.example.springsecuritymysql.security.Salt;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -18,8 +22,11 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.security.PermitAll;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -47,7 +54,8 @@ public class EmployeeController {
     @Autowired
     private VehicleRepository vehicleRepository;
 
-
+    @Autowired
+    private RoleRepository roleRepository;
 
     @Autowired
     private ModelConverter converter;
@@ -88,13 +96,27 @@ public class EmployeeController {
 
     // CREATE  - employee
 //    @CrossOrigin(origins = {"*"})
+    @PermitAll
     @PostMapping(APP_API+EMPLOYEES_URL+"/")
+    @JsonIgnoreProperties(ignoreUnknown = true)
     @ResponseBody
     ClientEmployee newEmployee(@Valid @RequestBody Employee newEmployee) {
-        System.out.println("New employeeId found: " + newEmployee.getFirstName());
-        String hashed = BCrypt.hashpw(newEmployee.getPassword(), Salt.getSalt());
-        newEmployee.setPassword(hashed);
-        return converter.convert(repository.save(newEmployee));
+        System.out.println("New employee found: " + newEmployee.getFirstName());
+        List<Employee> foundEmployee = repository.findByEmail(newEmployee.getEmail());
+        if(foundEmployee.isEmpty() || foundEmployee == null){
+            String hashed = BCrypt.hashpw(newEmployee.getPassword(), Salt.getSalt());
+            newEmployee.setPassword(hashed);
+
+            converter.convert(repository.save(newEmployee));
+            Collection<Role> roleCollection = new HashSet<>();
+            Employee newEmp = repository.findByEmail(newEmployee.getEmail()).get(0);
+            roleCollection.add(Role.create(newEmp.getEmployeeId()));
+            newEmp.setRoles(roleCollection);
+//            roleRepository.save(Role.create(newEmp.getEmployeeId()));
+            return converter.convert(newEmp);
+        }else{
+            throw new UserAlreadyExistAuthenticationException("Username already exists!");
+        }
     }
 
     // READ - Single employee

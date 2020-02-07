@@ -12,7 +12,7 @@ public class SecurityConstants {
     public static final String APP_API = "/api";
     public static final String LOGIN_URL = "/employeesLogin/";
     public static final String SIGN_OUT_URL = "/signOut";
-    public static final String SIGN_UP_URL = "/employeesForm/";
+    public static final String SIGN_UP_URL = "/employeesForm";
     public static final String EMPLOYEES_URL = "/employees";
     public static final String VEHICLES_URL = "/vehicles";
 }

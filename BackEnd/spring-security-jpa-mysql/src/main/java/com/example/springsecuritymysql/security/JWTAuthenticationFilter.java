@@ -1,5 +1,6 @@
 package com.example.springsecuritymysql.security;
 
+import com.example.springsecuritymysql.exception.UserAlreadyExistAuthenticationException;
 import com.example.springsecuritymysql.model.Employee;
 import com.example.springsecuritymysql.service.CustomUserDetailsService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -26,10 +27,10 @@ import java.util.stream.Collectors;
 
 import static com.example.springsecuritymysql.security.SecurityConstants.*;
 
-//import static com.auth0.jwt.algorithms.Algorithm.HMAC512;
-
-
 public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
+
+    @Autowired
+    private UserAlreadyExistAuthenticationException userAlreadyExistAuthenticationException;
 
     private AuthenticationManager authenticationManager;
     @Autowired
@@ -64,8 +65,6 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
                                             FilterChain filterChain, Authentication authentication) throws IOException {
 
         CustomUserDetails authUser = ((CustomUserDetails) authentication.getPrincipal());
-//        UserDetails user = customUserDetailsService.loadUserByUsername(authUser.getEmail());
-
 
         List<String> roles = authUser.getAuthorities()
                 .stream()
@@ -89,7 +88,7 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         String json = gson.toJson(authUser);
         response.getWriter().write(json);
 
-//        System.out.println("JWT TOKEN: " + token +"\nJSON "+json);
+        System.out.println("JWT TOKEN: " + token +"\nJSON "+json);
     }
 
 }
