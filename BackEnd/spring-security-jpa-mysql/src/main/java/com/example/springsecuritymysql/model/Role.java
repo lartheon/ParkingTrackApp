@@ -6,7 +6,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.persistence.*;
 import java.util.Collection;
-import java.util.Set;
 
 @Entity
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -33,7 +32,7 @@ public class Role {
         this.roleId = roleId;
         this.role = role;
     }
-    public static Role create(Long roleId){
+    public Role create(Long roleId){
         AuthorityType authorityType;
         if(roleId == 1){
             authorityType = AuthorityType.ROLE_ADMIN;

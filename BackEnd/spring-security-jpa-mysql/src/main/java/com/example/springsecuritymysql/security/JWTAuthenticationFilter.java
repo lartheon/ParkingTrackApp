@@ -5,6 +5,7 @@ import com.example.springsecuritymysql.model.Employee;
 import com.example.springsecuritymysql.service.CustomUserDetailsService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
@@ -21,6 +22,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -85,10 +87,24 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
         Gson gson = new Gson();
-        String json = gson.toJson(authUser);
-        response.getWriter().write(json);
+        String role = roles.get(0).replaceAll("^\"|\"$",roles.get(0)); //somehow between here and the client role string gets wrapped in quotes, why??
+        CustomUserDetails newAuthUser = new CustomUserDetails(
+                authUser.getId(),
+                null,
+                null,
+                null,
+                authUser.getEmail(),
+                null,
+                null,
+                null,
+                role
+        );
+//        String jsonRole = gson.toJson(roleCollection.iterator().next());
+        String jsonUser = gson.toJson(newAuthUser);
+//        String json = gson.toJson(jsonUser +','+ jsonRole);
+        response.getWriter().write(jsonUser);
 
-        System.out.println("JWT TOKEN: " + token +"\nJSON "+json);
+        System.out.println("JWT TOKEN: " + token +"\nJSON "+jsonUser);
     }
 
 }

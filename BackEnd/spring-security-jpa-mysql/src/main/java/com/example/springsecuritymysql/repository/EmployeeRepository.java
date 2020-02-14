@@ -14,7 +14,11 @@ import java.util.Optional;
 @Repository
 public interface EmployeeRepository extends JpaRepository<Employee,Long> {
 
-    List<Employee> findByPermitNumber(String permitNumber);
+    @Query(
+            value = "SELECT * FROM employees e WHERE e.permit_number = ?1",
+            nativeQuery = true
+    )
+    List<Employee> findByPermitNumber(@Param("permit_number") String permitNumber);
 
     @Query(
             value = "SELECT * FROM employees e WHERE concat(e.first_name, e.last_name) LIKE concat('%',:name,'%')",

@@ -23,6 +23,7 @@ class EmployeeLogin extends React.Component {
         // Below is the state of the App (parent) component.
         this.state = {
             error401: false,
+            error404: false,
             error500: false,
             success: false,
             fail: false,
@@ -50,7 +51,7 @@ class EmployeeLogin extends React.Component {
 
     }
     validate = () => {
-        console.log("validate login: " + this.state.email + " password: " + this.state.password)
+        console.log("validate login: " + this.state.email)
         return this.state.email.length > 0 && this.state.password.length > 0;
     }
 
@@ -68,14 +69,26 @@ class EmployeeLogin extends React.Component {
             .then(res => {
                 if (res.status === 200) {
                     console.log('auth status ' + res.statusText);
-                    res.headers.get("Authorization");
+                    // res.headers.get("Authorization");
                     // console.log('jwt auth?? ' + JSON.stringify(res.headers.get("Authorization")));
                     localStorage.setItem('Authorization', res.headers.get("Authorization"));
 
-
                     res.json()
                         .then(jsonData => {
-                            console.log('PUT respose: ' + JSON.stringify(jsonData));
+                            // console.log('PUT respose: ' + JSON.stringify(jsonData));
+                            // localStorage.setItem('parking-employee-jwt', JSON.stringify(jsonData));
+                            var contentKeys = Object.keys(jsonData);
+                            contentKeys.map((str) => {
+                                    localStorage.setItem('parking-employee-'+str,  JSON.stringify(jsonData[str]));
+                                    if(str === "authorities"){
+                                        var authJson = jsonData[str];
+                                        var authKey = Object.keys(authJson);
+                                        authKey.map((authStr) => {
+                                            localStorage.setItem('parking-employee-'+str,  JSON.stringify(authJson[authStr]) )
+                                        })
+                                        ;
+                                    }
+                             });
 
                             this.setState({ success: true, fail: false });
                             this.props.history.push("/Search");
@@ -88,10 +101,15 @@ class EmployeeLogin extends React.Component {
                     console.error('permission denied: ' + res.status);
                     this.setState({ error401: true, error500: false });
                 }
+                if(res.status === 404){
+                    //permission denied
+                    console.error('404 not found: ' + res.status);
+                    this.setState({ error404: true, error401: false, error500: false });
+                }
                 if(res.status === 500){
                     //server error
                     console.error('server error: ' + res.status);
-                    this.setState({ error401: false, error500: true });
+                    this.setState({ error401: false, error404: false, error500: true });
                 }
                 
                 else {
@@ -116,6 +134,7 @@ class EmployeeLogin extends React.Component {
         let isValid = this.state.isValid;
         let searched = this.state.searched;
         let error401 = this.state.error401;
+        let error404 = this.state.error404;
         let error500 = this.state.error500;
 
         if (!searched || !isValid) {
@@ -162,6 +181,9 @@ class EmployeeLogin extends React.Component {
                        
                         {error401 && (
                             <div className="alert alert-danger"><span aria-label='permission denied' role="img">🚫</span> Unable to login, either the username or password is incorrect!</div>
+                                 )}
+                        {error404 && (
+                            <div className="alert alert-danger"><span aria-label='404 not found' role="img">🚫</span> Oops! 404</div>
                                  )}
                         {error500 && (
                             <div className="alert alert-danger"><span aria-label='shrug' role="img">🤷</span> Oops! Something went wrong on our server</div>

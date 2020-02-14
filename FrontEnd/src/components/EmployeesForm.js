@@ -10,6 +10,7 @@ const initialState = {
     error401: false,
     error401POST: false,
     error500: false,
+    deleteEmployeeBtn: false,
     employeeId: "",
     firstName: "",
     lastName: "",
@@ -70,8 +71,37 @@ class EmployeesForm extends React.Component {
         if (employeeId) {
             this.callAPI(employeeId);
         }
-    }
 
+    }
+    checkIfAdminUser() {
+    console.log("localStorage.getItem('parking-employee-id') " + localStorage.getItem('parking-employee-id'));
+    console.log("localStorage.getItem('parking-employee-role') <" + localStorage.getItem('parking-employee-role') + ">");
+    switch(localStorage.getItem('parking-employee-role')){
+        case "\"ROLE_ADMIN\"" :
+            this.setState({ deleteEmployeeBtn: true })
+            console.log('True Session user IS "Admin" ' + this.state.deleteEmployeeBtn + " it was " + localStorage.getItem('parking-employee-role'))
+        break;
+        case "ROLE_ADMIN" :
+            this.setState({ deleteEmployeeBtn: true })
+            console.log('True Session user IS Admin ' + this.state.deleteEmployeeBtn + " it was " + localStorage.getItem('parking-employee-role'))
+        break;
+        case "\"ROLE_USER\"" :
+            this.setState({ deleteEmployeeBtn: false })
+            console.log('False Session user is NOT Admin ' + this.state.deleteEmployeeBtn + " it was " + localStorage.getItem('parking-employee-role'))
+        break;
+        default : 
+        this.setState({ deleteEmployeeBtn: false })
+            console.log('False Session user is NEITHER Admin or User ' + this.state.deleteEmployeeBtn + " it was " + localStorage.getItem('parking-employee-role'))
+        break;
+    }
+        // if (localStorage.getItem('parking-employee-role') === "ROLE_ADMIN") {
+        //     this.setState({ deleteEmployeeBtn: true })
+        //     console.log('True Session user is Admin ' + this.state.deleteEmployeeBtn)
+        // } else {
+        //     this.setState({ deleteEmployeeBtn: false })
+        //     console.log('False Session user is Admin ' + this.state.deleteEmployeeBtn)
+        // }
+    }
     // Calling the endpoints(API) in the server side (grabing the endpoints from the backend) to get a employee Id.
     callAPI(employeeId) {
         console.log(api_endpoint + "/" + employeeId);
@@ -91,17 +121,15 @@ class EmployeesForm extends React.Component {
                     res.text().then(
                         res => {
                             const employee = JSON.parse(res);
+                            this.checkIfAdminUser();
                             this.setState(employee);
                             console.log('PRINTING EMPLOYEE DETAILS: ' + JSON.stringify(employee))
                         });
-
                 }
             }
-
             )
     };
     // vehicles field with an Array:
-
 
 
 
@@ -125,9 +153,8 @@ class EmployeesForm extends React.Component {
                 if (res.status === 200) {
                     res.text().then(res => {
                         localStorage.setItem('parking-employee-jwt', res);
-                        this.setState({ employees: JSON.parse(res) });
+                        this.setState({ employees: JSON.parse(res), success: true, fail: false, error401POST: false, error401: false, error500: false });
 
-                        this.setState({ success: true, fail: false, error401POST: false, error401: false, error500: false });
                         setTimeout(function () {
                             this.props.history.push("/EmployeesForm/" + this.state.employees.employeeId);
                             this.setState({ success: false, fail: false, error401POST: false, error401: false, error500: false });
@@ -198,7 +225,53 @@ class EmployeesForm extends React.Component {
             });
     }
 
-
+    callDeleteAPI(data) {
+        this.setState({agreed:true});
+        console.log('callPutAPI: ' + api_endpoint + "/" + data.employeeId);
+        fetch(api_endpoint + "/" + data.employeeId, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': localStorage.getItem('Authorization'),
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+            },
+        }).then(res => {
+            if (res.status === 200) {
+                res.text().then(res => {
+                    console.log('DELETE res: ' + res);
+                    localStorage.setItem('parking-employee-jwt', res);
+                    this.setState({
+                        employeeId: "",
+                        firstName: "",
+                        lastName: "",
+                        permitNumber: "",
+                        email: "",
+                        skypeId: "",
+                        dept: "",
+                        password: "",
+                        confirmPassword: "",
+                        role: "",
+                        vehicles:[]});
+                    setTimeout(function () {
+                        this.props.history.push("/EmployeesForm/");
+                        this.setState({ success: false, fail: false, error401POST: false, error401: false, error500: false });
+                    }.bind(this), 1000);
+                });
+            }
+            if (res.status === 401) {
+                //permission denied
+                console.error('permission denied: ' + res.status);
+                this.setState({ error401: true, error500: false });
+            }
+            if (res.status === 500) {
+                //server error
+                console.error('server error: ' + res.status);
+                this.setState({ error401: false, error500: true });
+            } else {
+                console.error(res.status + " " + res.statusText)
+            }
+        })
+    }
 
     //  Start of Basic Contact Details:
     // Is this the event handler?
@@ -211,6 +284,11 @@ class EmployeesForm extends React.Component {
         if (typeof this.state[event.target.name] == 'undefined' ||
             typeof this.state.vehicles[event.target.name] == 'undefined') {
             console.log(`Unknown field name ${event.target.name} - check your field names`)
+        }
+        if (this.state.error401POST) {
+            if (this.state[event.target.name] === this.state.email) {
+                this.setState({ error401POST: false });
+            }
         }
         // PT: Changed from stateState
         // PT: I cannot see where this is defined in the
@@ -300,7 +378,7 @@ class EmployeesForm extends React.Component {
         if (this.state.vehicles) {
 
             v = this.state.vehicles.map((vehicle, idx) => {
-                console.log('VALIDATING VEHICLE DETAILS ::: ' + JSON.stringify(vehicle))
+                // console.log('VALIDATING VEHICLE DETAILS ::: ' + JSON.stringify(vehicle))
                 if (!vehicle.regNumber) {
                     console.error('invalid vehicle registration number entered : ' + this.state.vehicles[idx].regNumber);
                     this.setState({ regNumberError: 'invalid registration number entered' });
@@ -368,7 +446,7 @@ class EmployeesForm extends React.Component {
         event.preventDefault();
         const isValid = this.validate();
 
-        console.log('handleSubmit this state :::\n' + JSON.stringify(this.state));
+        // console.log('handleSubmit this state :::\n' + JSON.stringify(this.state));
         // If the form validates, we want to store the data or values into our Database but How do I do this?
         // at the moment it clears the user input on submit.
 
@@ -390,7 +468,7 @@ class EmployeesForm extends React.Component {
 
             } else {
                 // If we don't have ID then its Post.
-                this.setState({role: "ROLE_USER"});
+                this.setState({ role: "ROLE_USER" });
                 console.log('no employeeId: ' + this.state.employeeId + ' sending POST request')
                 this.callPostAPI('', this.state);
 
@@ -401,13 +479,24 @@ class EmployeesForm extends React.Component {
 
     };
 
+    confirmDelete = (event) => {
+        // event.preventDefault();
+        if (window.confirm('Are you sure you wish to delete this employee?')) {
+            this.callDeleteAPI(this.state);
+        } else {
 
+        };
+    }
 
     render() {
+
         let employeeCars;
         let error401POST = this.state.error401POST;
         let error401 = this.state.error401;
         let error500 = this.state.error500;
+        let deleteEmployeeBtn = this.state.deleteEmployeeBtn;
+
+
 
         if (this.state.vehicles) {
 
@@ -469,19 +558,23 @@ class EmployeesForm extends React.Component {
             }
         }
         const empId = this.state.employeeId;
-        function disableField(){
-        if(empId){
-                      return true;          
-        }}
-        function passwordMSG(){
-            if(empId){
+        function disableField() {
+            if (empId) {
+                return true;
+            }
+        }
+        function passwordMSG() {
+            if (empId) {
                 return 'Change Password?'
-            }else{
+            } else {
                 return '* Password:'
             }
         }
+        
+      
+
         return (
-            <div className="container pt-4">
+            <div className="container pt-4 mb-5">
                 <form onSubmit={this.handleSubmit} >
                     {/*  <form className="needs-validation" novalidate> */}
                     <h3>Your Basic Contact Details:</h3>
@@ -494,8 +587,8 @@ class EmployeesForm extends React.Component {
                           Developers need to implement an event handler to capture changes with a onchange element. */}
                             {/* Capture changes of a form element using: onChange() as they happen. Update the internal
                           state in event handler. New values are saved in state and then the view is updated by a new render() */}
-                            <input type="text" name="firstName" id="firstName" className="form-control" 
-                                placeholder="Enter your first name" value={this.state.firstName} disabled = {disableField()}
+                            <input type="text" name="firstName" id="firstName" className="form-control"
+                                placeholder="Enter your first name" value={this.state.firstName} disabled={disableField()}
                                 onChange={this.handleChange}
                             />
                             {/* Update any errors that may occure. */}
@@ -505,7 +598,7 @@ class EmployeesForm extends React.Component {
                         <div className="form-group col-2">
                             <label>* Last Name: </label>
                             <input type="text" name="lastName" id="lastName" className="form-control"
-                                placeholder="Enter your last name" value={this.state.lastName} disabled = {disableField()}
+                                placeholder="Enter your last name" value={this.state.lastName} disabled={disableField()}
                                 onChange={this.handleChange}
                             />
                             <div style={{ fontSize: 14, color: "red" }}>{this.state.lastNameError}</div>
@@ -549,7 +642,13 @@ class EmployeesForm extends React.Component {
                             />
                             <div style={{ fontSize: 18, color: "red" }}>{this.state.permitNumberError}</div>
                         </div>
+                        {deleteEmployeeBtn && (
+                            <div className="form-group col-4 d-flex align-items-end flex-column">
+                                <label>Delete Employee?</label>
+                                <button className="btn btn-primary" type="submit" onClick={() => this.confirmDelete(this.state.employeeId)}>Delete</button>
+                            </div>)}
                     </div>
+
                     <div className="form-row mb-3">
                         <div className="form-group col-4">
                             <label>{passwordMSG()} </label>
@@ -577,7 +676,7 @@ class EmployeesForm extends React.Component {
                     <p><button className="btn btn-primary" type="button" onClick={this.addVehicle}>Add Vehicle</button></p>
                     <h3>About Your Vehicle: </h3>
                     {employeeCars}
-                    {console.log('RENDER Called :: current state is \n' + JSON.stringify(this.state))}
+                    {/* {console.log('RENDER Called :: current state is \n' + JSON.stringify(this.state))} */}
 
                     {/* End of Vehicle Details */}
 
@@ -611,7 +710,7 @@ class EmployeesForm extends React.Component {
                         )}
                     </div>
                     <button className="btn btn-primary" type="submit">Submit form</button>
-                    <Link to="/" className="btn btn-primary" role="button">Home</Link>
+                    {/* <Link to="/" className="btn btn-primary" role="button">Home</Link> */}
 
                 </form>
 

@@ -8,6 +8,7 @@ class SpringSecurityJpaMysqlApplicationTests {
 
 	@Test
 	void contextLoads() {
+
 	}
 
 }

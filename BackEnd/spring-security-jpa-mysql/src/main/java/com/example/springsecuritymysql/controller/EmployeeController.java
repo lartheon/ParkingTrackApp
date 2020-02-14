@@ -25,10 +25,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.security.PermitAll;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static com.example.springsecuritymysql.security.SecurityConstants.*;
 import static java.util.Collections.emptyList;
@@ -110,9 +107,12 @@ public class EmployeeController {
             converter.convert(repository.save(newEmployee));
             Collection<Role> roleCollection = new HashSet<>();
             Employee newEmp = repository.findByEmail(newEmployee.getEmail()).get(0);
-            roleCollection.add(Role.create(newEmp.getEmployeeId()));
+            Role role = new Role();
+            roleCollection.add(role.create(newEmp.getEmployeeId()));
             newEmp.setRoles(roleCollection);
-//            roleRepository.save(Role.create(newEmp.getEmployeeId()));
+            converter.convert(repository.save(newEmp));
+//            roleRepository.save(role.create(newEmp.getEmployeeId()));
+//            replaceEmployee(newEmp,newEmp.getEmployeeId());
             return converter.convert(newEmp);
         }else{
             throw new UserAlreadyExistAuthenticationException("Username already exists!");
@@ -159,7 +159,7 @@ public class EmployeeController {
         System.out.println("replaceEmployee id: " + id.toString());
         VehicleController vc = new VehicleController();
         Employee dBEmployee = repository.findByIdInTable(id);
-        Set<Vehicle> dBEmployeeVehicles = dBEmployee.getVehicles();
+        Optional<Set<Vehicle>> dBEmployeeVehicles = Optional.ofNullable(dBEmployee.getVehicles());
         Set<Employee.VehicleForDeletion> vehiclesForDeletion = newEmployee.getForDeletion();
 
         return repository.findById(id).map(employee -> {
@@ -197,7 +197,7 @@ public class EmployeeController {
                 } else {
                     System.out.println("VehicleId NOT null: Updating: " + v.getVehicleId());
 
-                    for (Vehicle dbV : dBEmployeeVehicles) {
+                    for (Vehicle dbV : dBEmployeeVehicles.get()) {
                         if (v.getVehicleId() == dbV.getVehicleId()) {
                             System.out.println("dbEmployee table contains this vehicleId : " + v.getVehicleId());
                             replaceVehicle(v, v.getVehicleId());
@@ -250,7 +250,13 @@ public class EmployeeController {
 //    @CrossOrigin(origins = {"*"})
     @DeleteMapping(APP_API+EMPLOYEES_URL+"/{id}")
     void deleteEmployee(@PathVariable Long id) {
-        repository.deleteById(id);
+        Employee employee = repository.findById(id).get();
+        if(employee != null){
+
+//            employee.setVehicles(null);
+            replaceEmployee(employee,id);
+            repository.deleteById(id);
+        }
     }
 
     @Transactional

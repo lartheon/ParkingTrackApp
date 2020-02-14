@@ -6,21 +6,12 @@ import com.example.springsecuritymysql.repository.RoleRepository;
 import com.example.springsecuritymysql.repository.VehicleRepository;
 import com.example.springsecuritymysql.security.CustomUserDetails;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Example;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Optional;
-
-import static java.util.Collections.emptyList;
 
 @Service
 public class CustomUserDetailsService implements UserDetailsService {

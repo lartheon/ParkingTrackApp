@@ -13,7 +13,6 @@ import javax.validation.constraints.NotEmpty;
 @Table(name = "vehicles")
 public class Vehicle {
 
-//    @GeneratedValue(strategy=  GenerationType.AUTO)
     @Id @GeneratedValue(strategy= GenerationType.IDENTITY) @Column(nullable = false, name="vehicleId")
     private Long vehicleId;
     @NotEmpty(message = "Please provide a Reg number")

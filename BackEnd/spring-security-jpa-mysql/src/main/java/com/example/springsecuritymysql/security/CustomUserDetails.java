@@ -25,6 +25,8 @@ public class CustomUserDetails implements UserDetails {
     private String password;
 
     private Collection<? extends GrantedAuthority> authorities;
+    private GrantedAuthority gAuthorities;
+    private String role;
 
     public CustomUserDetails(Long employeeID, String firstName, String lastName, String skypeId, String email, String password, String dept, String permitNo, Collection<? extends GrantedAuthority> roles){
         this.id = employeeID;
@@ -32,6 +34,20 @@ public class CustomUserDetails implements UserDetails {
         this.username = email;
         this.password = password;
         this.authorities = roles;
+    }
+    public CustomUserDetails(Long employeeID, String firstName, String lastName, String skypeId, String email, String password, String dept, String permitNo,  GrantedAuthority roles){
+        this.id = employeeID;
+        this.email = email;
+        this.username = email;
+        this.password = password;
+        this.gAuthorities = roles;
+    }
+    public CustomUserDetails(Long employeeID, String firstName, String lastName, String skypeId, String email, String password, String dept, String permitNo,  String role){
+        this.id = employeeID;
+        this.email = email;
+        this.username = email;
+        this.password = password;
+        this.role = role;
     }
     public CustomUserDetails(Employee employee){
         this.id = employee.getEmployeeId();
@@ -76,6 +92,14 @@ public class CustomUserDetails implements UserDetails {
 
     public String getEmail() {
         return email;
+    }
+
+    public GrantedAuthority getgAuthorities() {
+        return gAuthorities;
+    }
+
+    public String getRole() {
+        return role;
     }
 
     @Override
