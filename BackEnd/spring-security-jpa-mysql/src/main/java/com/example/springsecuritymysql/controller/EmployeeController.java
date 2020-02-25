@@ -9,7 +9,6 @@ import com.example.springsecuritymysql.model.Vehicle;
 import com.example.springsecuritymysql.repository.EmployeeRepository;
 import com.example.springsecuritymysql.repository.RoleRepository;
 import com.example.springsecuritymysql.repository.VehicleRepository;
-import com.example.springsecuritymysql.security.AuthorityType;
 import com.example.springsecuritymysql.security.Salt;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,9 +58,9 @@ public class EmployeeController {
 
     // Aggregate root
 //    @CrossOrigin(origins = {"*"})
-    @GetMapping(APP_API+EMPLOYEES_URL)
+    @GetMapping(APP_API+EMPLOYEES_URL+"/All")
     List<ClientEmployee> all() {
-        List<Employee> all = repository.findAll();
+        List<Employee> all = repository.findAllInTable().orElseThrow(() -> new EmployeeNotFoundException(null));
         return converter.convert(all);
     }
 
@@ -124,7 +123,7 @@ public class EmployeeController {
     @ResponseBody
     ClientEmployee one(@PathVariable @Min(1) Long id) {
         System.out.println("ClientEmployee one() id: " + id);
-        return converter.convert(repository.findById(id)
+        return converter.convert(repository.findByIdInTable(id)
                 .orElseThrow(() -> new EmployeeNotFoundException(id)));
     }
 
@@ -158,9 +157,9 @@ public class EmployeeController {
     Employee replaceEmployee(@Valid @RequestBody Employee newEmployee, @PathVariable Long id) {
         System.out.println("replaceEmployee id: " + id.toString());
         VehicleController vc = new VehicleController();
-        Employee dBEmployee = repository.findByIdInTable(id);
+        Employee dBEmployee = repository.findById(id).orElseThrow(() -> new EmployeeNotFoundException(id));
         Optional<Set<Vehicle>> dBEmployeeVehicles = Optional.ofNullable(dBEmployee.getVehicles());
-        Set<Employee.VehicleForDeletion> vehiclesForDeletion = newEmployee.getForDeletion();
+        Set<Employee.VehicleForDeletion> vehiclesForDeletion = newEmployee.getVehicleForDeletion();
 
         return repository.findById(id).map(employee -> {
             System.out.println("Employee: " + employee);
@@ -170,7 +169,8 @@ public class EmployeeController {
             employee.setEmail(newEmployee.getEmail());
             employee.setDept(newEmployee.getDept());
             employee.setPermitNumber(newEmployee.getPermitNumber());
-            employee.setForDeletion(null);
+            employee.setDeleted(false);
+            employee.setVehicleForDeletion(null);
             if(newEmployee.getPassword() != null){
                 if(!newEmployee.getPassword().isEmpty()){
                     String hashed = BCrypt.hashpw(newEmployee.getPassword(), Salt.getSalt());
@@ -250,12 +250,11 @@ public class EmployeeController {
 //    @CrossOrigin(origins = {"*"})
     @DeleteMapping(APP_API+EMPLOYEES_URL+"/{id}")
     void deleteEmployee(@PathVariable Long id) {
-        Employee employee = repository.findById(id).get();
+        Employee employee = repository.findById(id).orElseThrow(() -> new EmployeeNotFoundException(id));
         if(employee != null){
-
-//            employee.setVehicles(null);
-            replaceEmployee(employee,id);
-            repository.deleteById(id);
+            employee.setDeleted(true);
+//            repository.deleteById(id);
+             repository.save(employee);
         }
     }
 

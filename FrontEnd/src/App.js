@@ -176,6 +176,7 @@ class App extends React.Component {
         });
 
         event.stopPropagation();
+        console.log("submission via "+event.target.value)
         this.handleSearchSubmit(event.target.value);
     }
 
@@ -266,9 +267,9 @@ class App extends React.Component {
                             {error500 && (
                             <div className="alert alert-danger"><span aria-label='shrug' role="img">🤷</span> Oops! Something went wrong </div>
                                  )}
-                                        <button form='searchForm' type="submit"
+                                        <button id='showAll' form='searchForm' type="submit"
                                             className="btn btn-outline-primary mb-3"
-                                            onClick={e => { this.submissionHandler(e) }}
+                                            onClick={e => {this.setState({searched: true}); this.callAPI('All') }}
                                         >Show All</button>
                                     </Form>
                                     <Employees className="col-10"

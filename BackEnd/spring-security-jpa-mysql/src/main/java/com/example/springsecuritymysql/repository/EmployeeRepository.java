@@ -32,9 +32,13 @@ public interface EmployeeRepository extends JpaRepository<Employee,Long> {
     )
     List<Employee> findByRegNumber(@Param("reg") String reg);
 
+    @Query(value = "SELECT * FROM employees e WHERE e.deleted = false",
+            nativeQuery = true)
+    Optional<List<Employee>> findAllInTable();
+
     @Query(value = "SELECT * FROM employees e WHERE e.employee_id = ?1",
             nativeQuery = true)
-    Employee findByIdInTable(@Param("id") Long id);
+    Optional<Employee> findByIdInTable(@Param("id") Long id);
 
     @Transactional
     @Modifying

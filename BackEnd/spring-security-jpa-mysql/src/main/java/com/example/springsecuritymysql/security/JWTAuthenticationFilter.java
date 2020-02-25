@@ -5,7 +5,6 @@ import com.example.springsecuritymysql.model.Employee;
 import com.example.springsecuritymysql.service.CustomUserDetailsService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
-import com.google.gson.JsonElement;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
@@ -22,7 +21,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -99,9 +97,7 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
                 null,
                 role
         );
-//        String jsonRole = gson.toJson(roleCollection.iterator().next());
         String jsonUser = gson.toJson(newAuthUser);
-//        String json = gson.toJson(jsonUser +','+ jsonRole);
         response.getWriter().write(jsonUser);
 
         System.out.println("JWT TOKEN: " + token +"\nJSON "+jsonUser);

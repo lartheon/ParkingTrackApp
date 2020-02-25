@@ -10,6 +10,7 @@ CREATE TABLE parking_tracker_app.employees (
     , email VARCHAR (254)
     , dept TEXT
     , password VARCHAR (256) DEFAULT NULL
+    , deleted BIT(1) DEFAULT 0
 );
 CREATE TABLE parking_tracker_app.vehicles (
     vehicle_id INT NOT NULL PRIMARY KEY AUTO_INCREMENT
@@ -17,6 +18,7 @@ CREATE TABLE parking_tracker_app.vehicles (
     , make TEXT
     , model TEXT
     , colour TEXT
+    , deleted BIT(1) DEFAULT 0
 );
 CREATE TABLE parking_tracker_app.employees_vehicles (
       employee_id INT NOT NULL REFERENCES employees(employee_id)
@@ -46,23 +48,23 @@ INSERT INTO parking_tracker_app.employee_roles (
 
 
 INSERT INTO parking_tracker_app.employees (
-    permit_number, first_name, last_name, skype_id, email, dept, password
+    permit_number, first_name, last_name, skype_id, email, dept, password, deleted
 ) VALUES
-("007", "Larsson", "Kabukoba", "live.larsson.kabukoba", "larsson.kabukoba@raytheon.co.uk", "Engineering", "$2a$10$dCx.23.x1o3K09SnKO13WOw/m3Hd7LdXfLdP4dNMTYC0QPzses8Ru"),
-("244", "Kara", "Brown", "live.kara.brown", "kara@raytheon.co.uk", "Engineering", null),
-("252", "Vanessa", "Tsang", "live.vanessa.tsang", "vanessa@raytheon.co.uk", "Engineering", null),
-("252", "Paul", "White", "live.paul.white", "paul@raytheon.co.uk", "Finance", null),
-("363", "Jess", "Kit", "live.jess.kit", "jess@raytheon.co.uk", "HR", null),
-("300", "John", "Doe", "live.johnny.doe", "j.doe@example.com", "Special Ops", null);
+("007", "Larsson", "Kabukoba", "live.larsson.kabukoba", "larsson.kabukoba@raytheon.co.uk", "Engineering", "$2a$10$dCx.23.x1o3K09SnKO13WOw/m3Hd7LdXfLdP4dNMTYC0QPzses8Ru", 0),
+("244", "Kara", "Brown", "live.kara.brown", "kara@raytheon.co.uk", "Engineering", null, 0),
+("252", "Vanessa", "Tsang", "live.vanessa.tsang", "vanessa@raytheon.co.uk", "Engineering", null, 0),
+("252", "Paul", "White", "live.paul.white", "paul@raytheon.co.uk", "Finance", null, 0),
+("363", "Jess", "Kit", "live.jess.kit", "jess@raytheon.co.uk", "HR", null, 0),
+("300", "John", "Doe", "live.johnny.doe", "j.doe@example.com", "Special Ops", null, 1);
 
 
 INSERT INTO parking_tracker_app.vehicles (
-    reg_number, make, model, colour
+    reg_number, make, model, colour, deleted
 ) VALUES
-("BV10 SEP", "Honda", "Jazz", "Red"),
-("DB51 SMR", "BMW", "Z3", "Silver"),
-("OP65 AWR", "Ford", "Focus", "Black"),
-("GR22 SMX", "VW", "Polo", "Blue");
+("BV10 SEP", "Honda", "Jazz", "Red", 0),
+("DB51 SMR", "BMW", "Z3", "Silver", 0),
+("OP65 AWR", "Ford", "Focus", "Black", 0),
+("GR22 SMX", "VW", "Polo", "Blue", 0);
 
 
 INSERT INTO parking_tracker_app.employees_vehicles (

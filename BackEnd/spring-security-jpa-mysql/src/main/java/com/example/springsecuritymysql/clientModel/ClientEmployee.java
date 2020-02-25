@@ -96,7 +96,7 @@ public class ClientEmployee {
         return forDeletion;
     }
 
-    public void setForDeletion(Set<Employee.VehicleForDeletion> forDeletion) {
+    public void setVehiclesForDeletion(Set<Employee.VehicleForDeletion> forDeletion) {
         this.forDeletion = forDeletion;
     }
 

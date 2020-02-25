@@ -20,7 +20,7 @@ public class Employee {
 
     @Transient
     @JsonProperty("forDeletion")
-    private Set<VehicleForDeletion> idForDeletion;
+    private Set<VehicleForDeletion> vehicleIDforDeletion;
 
     @Id @GeneratedValue(strategy= GenerationType.IDENTITY)
     private Long employee_id;
@@ -59,6 +59,10 @@ public class Employee {
             inverseJoinColumns = @JoinColumn(name = "role_id", referencedColumnName = "role_id"))
     private Collection<Role> roles;
 
+    @JsonProperty
+    @Column(name = "deleted")
+    private boolean deleted;
+
     protected Employee(){}
 
     protected Employee(Employee employee) {
@@ -69,7 +73,7 @@ public class Employee {
         this.lastName = employee.getLastName();
         this.permitNumber = employee.getPermitNumber();
         this.skypeId = employee.getSkypeId();
-        this.idForDeletion = employee.getForDeletion();
+        this.vehicleIDforDeletion = employee.getVehicleForDeletion();
         this.roles = employee.getRoles();
     }
 
@@ -80,7 +84,7 @@ public class Employee {
                      String password,
                      String dept,
                      String permitNo,
-                     Set<VehicleForDeletion> forDeletion,
+                     Set<VehicleForDeletion> vehicleForDeletion,
                      Set<Role> roles)
     {
         this.dept = dept;
@@ -90,15 +94,15 @@ public class Employee {
         this.lastName = lastName;
         this.permitNumber = permitNo;
         this.skypeId = skypeId;
-        this.idForDeletion = forDeletion;
+        this.vehicleIDforDeletion = vehicleForDeletion;
         this.roles = roles;
     }
 
     @Override
     public String toString() {
         return String.format(
-                "Employee[employee_id=%d, firstName='%s', lastName='%s', skypeId='%s', email='%s', dept='%s', permitNumber='%s']",
-                employee_id, firstName, lastName, skypeId, email, dept, permitNumber);
+                "Employee[employee_id=%d, firstName='%s', lastName='%s', skypeId='%s', email='%s', dept='%s', permitNumber='%s', deleted='%s']",
+                employee_id, firstName, lastName, skypeId, email, dept, permitNumber, deleted);
     }
 
     public Long getEmployeeId() {
@@ -133,11 +137,19 @@ public class Employee {
         return vehicles;
     }
 
-    @JsonProperty("forDeletion")
-    public Set<VehicleForDeletion> getForDeletion() { return idForDeletion; }
+    public boolean isDeleted() {
+        return deleted;
+    }
+
+    public void setDeleted(boolean deleted) {
+        this.deleted = deleted;
+    }
 
     @JsonProperty("forDeletion")
-    public void setForDeletion(Set<VehicleForDeletion> forDeletion) { this.idForDeletion = forDeletion; }
+    public Set<VehicleForDeletion> getVehicleForDeletion() { return vehicleIDforDeletion; }
+
+    @JsonProperty("forDeletion")
+    public void setVehicleForDeletion(Set<VehicleForDeletion> vehicleForDeletion) { this.vehicleIDforDeletion = vehicleForDeletion; }
 
     public void setEmployeeId(Long employee_id) {
         this.employee_id = employee_id;
