@@ -1,0 +1,17 @@
+<!--<http use-expressions="true">-->
+<!--    <intercept-url pattern="/employeeLogin*" access="isAnonymous" />-->
+<!--    <intercept-url pattern="/**" access="isAuthenticated()" />-->
+
+<!--    <form-login login-page="EmployeesLogin.js"-->
+<!--                default-target-url="/app.js"/>-->
+<!--</http>-->
+
+<!-- <authentication-manager>-->
+<!--    <authentication-provider>-->
+<!--        <user-service></user-service>-->
+<!--        <password-encoder ref="encoder" />-->
+<!--    </authentication-provider>-->
+<!-- </authentication-manager>-->
+<!--<beans:bean id="encoder"-->
+<!--            class="org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder">-->
+<!--</beans:bean>-->

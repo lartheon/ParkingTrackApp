@@ -1,0 +1,92 @@
+DROP DATABASE parking_tracker_app;
+CREATE DATABASE parking_tracker_app;
+
+CREATE TABLE parking_tracker_app.employees (
+      employee_id INT NOT NULL PRIMARY KEY AUTO_INCREMENT
+    , permit_number TEXT NOT NULL
+    , first_name TEXT
+    , last_name TEXT
+    , skype_id VARCHAR (256)
+    , email VARCHAR (254)
+    , dept TEXT
+    , password VARCHAR (256) DEFAULT NULL
+    , deleted BIT(1) DEFAULT 0
+);
+CREATE TABLE parking_tracker_app.vehicles (
+    vehicle_id INT NOT NULL PRIMARY KEY AUTO_INCREMENT
+    , reg_number VARCHAR (11)
+    , make TEXT
+    , model TEXT
+    , colour TEXT
+    , deleted BIT(1) DEFAULT 0
+);
+CREATE TABLE parking_tracker_app.employees_vehicles (
+      employee_id INT NOT NULL REFERENCES employees(employee_id)
+    , vehicle_id INT NOT NULL REFERENCES vehicles(vehicle_id)
+    , PRIMARY KEY (employee_id, vehicle_id)
+);
+
+CREATE TABLE parking_tracker_app.employee_roles (
+	employee_id INT NOT NULL REFERENCES employees(employee_id)
+    , role_id INT NOT NULL
+    , PRIMARY KEY (employee_id, role_id)
+);
+CREATE TABLE parking_tracker_app.roles (
+	 role_id int NOT NULL AUTO_INCREMENT
+    , role_type VARCHAR (255) DEFAULT 'ROLE_USER'
+    , PRIMARY KEY (role_id)
+);
+INSERT INTO parking_tracker_app.roles (
+	role_id, role_type
+) VALUES
+( 1, 'ROLE_ADMIN'), (2, 'ROLE_USER'), (3, 'ROLE_USER'), (4, 'ROLE_USER'), (5, 'ROLE_USER'), (6, 'ROLE_USER');
+
+INSERT INTO parking_tracker_app.employee_roles (
+	employee_id,role_id
+) VALUES
+( 1, 1), (2, 2), (3, 3), (4, 4), (5, 5), (6, 6);
+
+
+INSERT INTO parking_tracker_app.employees (
+    permit_number, first_name, last_name, skype_id, email, dept, password, deleted
+) VALUES
+("007", "Larsson", "Kabukoba", "live.larsson.kabukoba", "larsson.kabukoba@raytheon.co.uk", "Engineering", "$2a$10$dCx.23.x1o3K09SnKO13WOw/m3Hd7LdXfLdP4dNMTYC0QPzses8Ru", 0),
+("244", "Kara", "Brown", "live.kara.brown", "kara@raytheon.co.uk", "Engineering", null, 0),
+("252", "Vanessa", "Tsang", "live.vanessa.tsang", "vanessa@raytheon.co.uk", "Engineering", null, 0),
+("252", "Paul", "White", "live.paul.white", "paul@raytheon.co.uk", "Finance", null, 0),
+("363", "Jess", "Kit", "live.jess.kit", "jess@raytheon.co.uk", "HR", null, 0),
+("300", "John", "Doe", "live.johnny.doe", "j.doe@example.com", "Special Ops", null, 1);
+
+
+INSERT INTO parking_tracker_app.vehicles (
+    reg_number, make, model, colour, deleted
+) VALUES
+("BV10 SEP", "Honda", "Jazz", "Red", 0),
+("DB51 SMR", "BMW", "Z3", "Silver", 0),
+("OP65 AWR", "Ford", "Focus", "Black", 0),
+("GR22 SMX", "VW", "Polo", "Blue", 0);
+
+
+INSERT INTO parking_tracker_app.employees_vehicles (
+    employee_id, vehicle_id
+) VALUES
+(
+    (SELECT employee_id FROM parking_tracker_app.employees WHERE permit_number = "244" LIMIT 1)
+    , (SELECT vehicle_id FROM parking_tracker_app.vehicles WHERE make = "Honda" LIMIT 1)
+),
+(
+    (SELECT employee_id FROM parking_tracker_app.employees WHERE permit_number = "244" LIMIT 1)
+    , (SELECT vehicle_id FROM parking_tracker_app.vehicles WHERE make = "Ford" LIMIT 1)
+),
+(
+    (SELECT employee_id FROM parking_tracker_app.employees WHERE permit_number = "252" AND first_name = "Vanessa" LIMIT 1)
+    , (SELECT vehicle_id FROM parking_tracker_app.vehicles WHERE make = "BMW" LIMIT 1)
+),
+(
+    (SELECT employee_id FROM parking_tracker_app.employees WHERE permit_number = "252" AND first_name = "Paul" LIMIT 1)
+    , (SELECT vehicle_id FROM parking_tracker_app.vehicles WHERE make = "BMW" LIMIT 1)
+),
+(
+    (SELECT employee_id FROM parking_tracker_app.employees WHERE permit_number = "363" LIMIT 1)
+    , (SELECT vehicle_id FROM parking_tracker_app.vehicles WHERE make = "VW" LIMIT 1)
+);

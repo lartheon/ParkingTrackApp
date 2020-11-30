@@ -1,4 +1,4 @@
-/* To create employees table with PRIMARY KEY that increments automatically */ 
+-- To create employees table with PRIMARY KEY that increments automatically 
 
 CREATE TABLE employees (
       employee_id INT NOT NULL PRIMARY KEY AUTO_INCREMENT

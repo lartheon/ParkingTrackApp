@@ -3,26 +3,20 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "bootstrap": "^4.4.1",
-    "create-react-app": "^3.3.0",
+    "bootstrap": "^4.4.0",
     "jquery": "^3.4.1",
     "react": "^16.12.0",
     "react-bootstrap": "^1.0.0-beta.16",
     "react-dom": "^16.12.0",
     "react-router-dom": "5.1.2",
-    "react-scripts": "^3.3.0",
-    "typeco": "^1.0.0",
-    "uuid": "^3.3.3"
+    "react-scripts": "3.2.0",
+    "typeco": "^1.0.0"
   },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
-  },
-  "proxy": "http://localhost:8080",
-  "/api": {
-    "target": "http://localhost:8080"
   },
   "eslintConfig": {
     "extends": "react-app"
